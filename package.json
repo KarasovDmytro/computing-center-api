@@ -1,0 +1,31 @@
+{
+  "name": "computing-center-api",
+  "version": "1.0.0",
+  "description": "A web-based system for managing computing center resources, tracking user sessions, and generating usage reports. Built with Node.js, PostgreSQL, Redis, and MongoDB.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KarasovDmytro/computing-center-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KarasovDmytro/computing-center-api/issues"
+  },
+  "homepage": "https://github.com/KarasovDmytro/computing-center-api#readme",
+  "dependencies": {
+    "concurrently": "^9.2.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}

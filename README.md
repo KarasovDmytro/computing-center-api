@@ -35,3 +35,36 @@ This project implements a database system for a Computing Center. It allows admi
 1. **Clone the repository**
    git clone [https://github.com/YOUR_USERNAME/computing-center-api.git](https://github.com/YOUR_USERNAME/computing-center-api.git)
    cd computing-center-api
+
+2. **Environment Setup**
+    Create a .env file in the root directory based on .env.example
+
+3. **Run with Docker Start the entire infrastructure (App + DBs)**
+    docker-compose up --build
+
+**The application will be running at: http://localhost:3000**
+
+### Project Structure
+computing-center-api/
+├── src/
+│   ├── config/         # Environment variables & database connection configuration
+│   ├── controllers/    # Request handlers (input validation, sending responses)
+│   ├── middlewares/    # Express middlewares (authentication, logging, error handling)
+│   ├── public/         # Static assets (CSS styles, images, client-side JS)
+│   ├── routes/         # API route definitions & URL mapping
+│   ├── services/       # Business logic & database interaction (Prisma/SQL)
+│   ├── utils/          # Reusable helper functions (date formatting, etc.)
+│   ├── views/          # Server-side rendered templates (EJS)
+│   └── index.js        # Application entry point & server setup
+├── .env.example        # Template for environment variables
+├── .gitignore          # Files and folders to ignore in Git
+├── docker-compose.yaml # Docker services orchestration (App, Postgres, Redis, MongoDB)
+├── Dockerfile          # Instructions to build the Node.js application image
+└── package.json        # Project metadata & dependencies
+
+## 👥 Team
+- **[Karasov Dmytro]** - Team Lead, Database Architect.
+
+- **[Taran Maksym]** - Backend Logic, Auth & Sessions.
+
+- **[Korniyenko Maksym]** - Frontend, Reporting & Visualization.
