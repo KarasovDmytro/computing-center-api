@@ -37,3 +37,4 @@ mongodata/
 
 # --- Testing ---
 coverage/
+/src/generated/prisma

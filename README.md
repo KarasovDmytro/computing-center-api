@@ -45,22 +45,29 @@ This project implements a database system for a Computing Center. It allows admi
 **The application will be running at: http://localhost:3000**
 
 ### Project Structure
+```text
 computing-center-api/
+├── prisma/                 # Database configuration & schema
+│   ├── migrations/         # SQL migration history
+│   ├── schema.prisma       # Database models definition
+│   └── seed.js             # Script to populate DB with test data
 ├── src/
-│   ├── config/         # Environment variables & database connection configuration
-│   ├── controllers/    # Request handlers (input validation, sending responses)
-│   ├── middlewares/    # Express middlewares (authentication, logging, error handling)
-│   ├── public/         # Static assets (CSS styles, images, client-side JS)
-│   ├── routes/         # API route definitions & URL mapping
-│   ├── services/       # Business logic & database interaction (Prisma/SQL)
-│   ├── utils/          # Reusable helper functions (date formatting, etc.)
-│   ├── views/          # Server-side rendered templates (EJS)
-│   └── index.js        # Application entry point & server setup
-├── .env.example        # Template for environment variables
-├── .gitignore          # Files and folders to ignore in Git
-├── docker-compose.yaml # Docker services orchestration (App, Postgres, Redis, MongoDB)
-├── Dockerfile          # Instructions to build the Node.js application image
-└── package.json        # Project metadata & dependencies
+│   ├── config/             # Environment variables & DB connection
+│   ├── controllers/        # Request handlers (input validation, sending responses)
+│   ├── middlewares/        # Express middlewares (auth, logging, errors)
+│   ├── public/             # Static assets (CSS, images, client-side JS)
+│   ├── routes/             # API route definitions
+│   ├── services/           # Business logic & database interaction
+│   ├── utils/              # Helper functions (date formatting, etc.)
+│   ├── views/              # EJS templates (UI)
+│   └── index.js            # Entry point & server setup
+├── .env.example            # Template for environment variables
+├── .gitignore              # Files to ignore in Git
+├── docker-compose.yml      # Docker services orchestration
+├── Dockerfile              # App container definition
+├── package.json            # Project dependencies & scripts
+└── README.md               # Project documentation
+```
 
 ## 👥 Team
 - **[Karasov Dmytro]** - Team Lead, Database Architect.

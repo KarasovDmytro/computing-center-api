@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  pib         String   
+  login       String   @unique
+  password    String
+  role        Role     @default(USER)
+  accessGroup String?  
+  createdAt   DateTime @default(now())
+
+  sessions    Session[]
+
+  @@map("users")
+}
+
+model Computer {
+  id              Int            @id @default(autoincrement())
+  inventoryNumber String         @unique
+  location        String?
+  status          ComputerStatus @default(AVAILABLE)
+
+  sessions        Session[]
+
+  @@map("computers")
+}
+
+model Session {
+  id          Int       @id @default(autoincrement())
+  
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id])
+  
+  computerId  Int
+  computer    Computer  @relation(fields: [computerId], references: [id])
+  
+  startTime   DateTime  @default(now())
+  endTime     DateTime? 
+
+  @@map("sessions")
+}
+
+enum Role {
+  PROGRAMMER
+  DB_ADMIN
+  USER
+  OPERATOR
+  HARDWARE_SPECIALIST
+}
+
+enum ComputerStatus {
+  AVAILABLE
+  BUSY
+  MAINTENANCE
+}
