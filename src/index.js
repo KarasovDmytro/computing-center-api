@@ -2,6 +2,12 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const morgan = require('morgan');
+
+const session = require('express-session');
+const { RedisStore } = require("connect-redis");
+const  redisClient = require('./config/redis');
+
+const authRoutes = require('./routes/authRoutes.js');
 const computerRoutes = require('./routes/computerRoutes.js');
 
 
@@ -16,10 +22,26 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(
+  session({
+    store: new RedisStore({ client: redisClient }), 
+    secret: process.env.SESSION_SECRET || 'super_secret_cat',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: false,
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24
+    }
+  })
+);
+
+app.use('/auth', authRoutes);
 app.use('/computers', computerRoutes);
 
 app.get('/', (req, res) => {
-  res.send('<h1>Computing Center API is working! 🚀</h1>');
+  const user = req.session.user ? req.session.user.pib : 'Гість';
+  res.send(`<h1>Computing Center API is working! 🚀<br>Привіт, ${user}</h1>`);
 });
 
 app.listen(PORT, () => {
