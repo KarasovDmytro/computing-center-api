@@ -9,7 +9,7 @@ const  redisClient = require('./config/redis');
 
 const authRoutes = require('./routes/authRoutes.js');
 const computerRoutes = require('./routes/computerRoutes.js');
-
+const sessionRouters = require('./routes/sessionRoutes.js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -37,7 +37,8 @@ app.use(
 );
 
 app.use('/auth', authRoutes);
-app.use('/computers', computerRoutes);
+app.use('/computer', computerRoutes);
+app.use('/session', sessionRouters);
 
 app.get('/', (req, res) => {
   const user = req.session.user ? req.session.user.pib : 'Гість';
