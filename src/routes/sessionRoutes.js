@@ -5,6 +5,7 @@ const { isAuthenticated, hasRole } = require('../middlewares/authMiddleware');
 const router = express.Router();
 
 router.post('/start', isAuthenticated, sessionController.startSessionController);
-router.put('/end',isAuthenticated, sessionController.endSessionController);
+router.post('/end', isAuthenticated, sessionController.endSessionController);
+router.post('/session-end', isAuthenticated, hasRole('DB_ADMIN'), sessionController.adminStopSessionController);
 
 module.exports = router;

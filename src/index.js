@@ -8,7 +8,6 @@ const { RedisStore } = require("connect-redis");
 const  redisClient = require('./config/redis');
 
 const authRoutes = require('./routes/authRoutes.js');
-const adminRoutes = require('./routes/adminRoutes.js');
 const computerRoutes = require('./routes/computerRoutes.js');
 const sessionRouters = require('./routes/sessionRoutes.js');
 
@@ -47,7 +46,6 @@ app.use((req, res, next) => {
 });
 
 app.use('/auth', authRoutes);
-app.use('/admin', adminRoutes);
 app.use('/computer', computerRoutes);
 app.use('/session', sessionRouters);
 

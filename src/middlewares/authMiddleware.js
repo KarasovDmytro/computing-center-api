@@ -2,12 +2,7 @@ const isAuthenticated = (req, res, next) => {
     if (req.session.user) {
         return next(); 
     }
-
-    return res.status(401).json({ 
-        success: false, 
-        message: 'Помилка доступу: Ви не авторизовані. Будь ласка, виконайте вхід через /auth/login' 
-    });
-    //res.redirect('/auth/login');
+    res.redirect('/auth/login');
 };
 
 const hasRole = (roles) => {
@@ -23,11 +18,7 @@ const hasRole = (roles) => {
         return next();
     }
 
-    return res.status(403).json({
-        success: false,
-        message: `Доступ заборонено! Ваша роль: ${userRole}, необхідна: ${allowedRoles.join(' або ')}`
-    });
-
+    res.redirect('/computer');
     };
 
 };

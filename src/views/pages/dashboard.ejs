@@ -124,7 +124,7 @@
                                 </form>
                             <% } else if (pc.status === 'BUSY') { %>
                                 <% if (user.role === 'DB_ADMIN') { %>
-                                    <form action="/admin/session-end" method="POST" class="d-grid">
+                                    <form action="/session/session-end" method="POST" class="d-grid">
                                         <input type="hidden" name="computerId" value="<%= pc.id %>">
                                         <button type="submit" class="btn btn-outline-danger btn-sm">
                                             <i class="bi bi-stop-fill"></i> Примусово завершити
@@ -143,7 +143,7 @@
                                 <% } %>
                             <% } else if (pc.status === 'MAINTENANCE') { %>
                                 <% if (user.role === 'DB_ADMIN') { %>
-                                    <form action="/admin/maintenance/end" method="POST" class="d-grid">
+                                    <form action="/computer/maintenance/end" method="POST" class="d-grid">
                                         <input type="hidden" name="computerId" value="<%= pc.id %>">
                                         <button class="btn btn-outline-secondary btn-sm">
                                             <i class="bi bi-gear"></i> Завершити ремонт
