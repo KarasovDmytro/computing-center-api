@@ -4,18 +4,58 @@ const prisma = new PrismaClient();
 const computerController = {
     getAllComputers: async (req, res) =>{
         try{
+            const { search, status } = req.query;
+            const whereClause = {};
+
+            if (status) {
+                whereClause.status = status;
+            }
+
+            if (search) {
+                whereClause.OR = [
+                    { 
+                        inventoryNumber: { 
+                            contains: search, 
+                            mode: 'insensitive'
+                        } 
+                    },
+                    { 
+                        location: { 
+                            contains: search, 
+                            mode: 'insensitive' 
+                        } 
+                    }
+                ];
+            }
+
             const computers = await prisma.computer.findMany({
+                where: whereClause,
                 orderBy: {
                     inventoryNumber: "asc"
                 }
             });
 
-            /*res.render('pages/computers', {
-                computers: computers,
-                title: "Список комп'ютерів"
-            });*/
+            let activeComputerId = null;
+        
+            if (req.session.user) {
+                const activeSession = await prisma.session.findFirst({
+                    where: {
+                        userId: req.session.user.id,
+                        endTime: null
+                    },
+                    select: { computerId: true }
+                });
+            
+            if (activeSession) {
+                activeComputerId = activeSession.computerId;
+            }
+        }
 
-            res.json(computers);
+            res.render('pages/dashboard', {
+                computers: computers,
+                activeComputerId: activeComputerId,
+                query: req.query
+            });
         }
         catch(e){
             console.log("Error when requesting computers data: ", e);
@@ -39,8 +79,7 @@ const computerController = {
                 }
             });
 
-            //res.redirect('/computers');
-            res.status(201).json(newPC);
+            res.redirect('/computers');
         }
         catch(e){
             console.error('Помилка при створенні комп\'ютера:', e);
@@ -51,7 +90,22 @@ const computerController = {
       
             res.status(500).send('Не вдалося створити комп\'ютер');
         }
-    } 
+    },
+    finishMaintenance: async (req, res) => {
+        const { computerId } = req.body;
+        try{
+            await prisma.computer.update({
+                where: {id: parseInt(computerId)},
+                data: {status: 'AVAILABLE'}
+            });
+
+            res.redirect('/computer');
+        }
+        catch(e){
+            console.error(error);
+            res.status(500).send("Не вдалося завершити ремонт");
+        }
+    }
 };
 
 module.exports = computerController;
