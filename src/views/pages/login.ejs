@@ -1,0 +1,57 @@
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 col-lg-4">
+
+        <div class="text-center mb-4">
+            <i class="bi bi-pc-display text-primary" style="font-size: 3rem;"></i>
+            <h2 class="h3 mt-2">Вхід у систему</h2>
+            <p class="text-muted">Computer Center Management</p>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+
+                <% if (locals.error) { %>
+                    <div class="alert alert-danger d-flex align-items-center" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <div><%= error %></div>
+                    </div>
+                <% } %>
+
+                <form action="/login" method="POST">
+
+                    <div class="mb-3">
+                        <label for="login" class="form-label text-muted small">Логін</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                            <input type="text" class="form-control" id="login" name="login" placeholder="Введіть логін" required autofocus>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label text-muted small">Пароль</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Введіть пароль" required>
+                        </div>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            Увійти
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="card-footer text-center py-3 bg-light border-0 small">
+                Немає акаунту? <a href="/register" class="text-decoration-none">Зареєструватися</a>
+            </div>
+        </div>
+
+        <div class="text-center mt-3 text-muted small">
+            <p>Для тесту: <strong>admin / 12345</strong> або <strong>user / 12345</strong></p>
+        </div>
+
+    </div>
+</div>
