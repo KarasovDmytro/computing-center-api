@@ -8,12 +8,17 @@ const { RedisStore } = require("connect-redis");
 const  redisClient = require('./config/redis');
 
 const authRoutes = require('./routes/authRoutes.js');
+const adminRoutes = require('./routes/adminRoutes.js');
 const computerRoutes = require('./routes/computerRoutes.js');
 const sessionRouters = require('./routes/sessionRoutes.js');
+
+const expressLayouts = require('express-ejs-layouts');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use(expressLayouts);
+app.set('layout', 'layouts/main');
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
@@ -36,13 +41,18 @@ app.use(
   })
 );
 
+app.use((req, res, next) => {
+  res.locals.user = req.session.user || null;
+  next();
+});
+
 app.use('/auth', authRoutes);
+app.use('/admin', adminRoutes);
 app.use('/computer', computerRoutes);
 app.use('/session', sessionRouters);
 
 app.get('/', (req, res) => {
-  const user = req.session.user ? req.session.user.pib : 'Гість';
-  res.send(`<h1>Computing Center API is working! 🚀<br>Привіт, ${user}</h1>`);
+  res.redirect('/computer');
 });
 
 app.listen(PORT, () => {

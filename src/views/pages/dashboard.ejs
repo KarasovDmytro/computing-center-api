@@ -2,10 +2,10 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h3">Панель керування</h1>
-            <p class="text-muted">Вітаємо, <strong><%= user.login %></strong>! Ось статус комп'ютерного залу.</p>
+            <p class="text-muted">Вітаємо, <strong><%= user.pib %></strong>! Ось статус комп'ютерного залу.</p>
         </div>
 
-        <% if (user.role === 'ADMIN') { %>
+        <% if (user.role === 'DB_ADMIN') { %>
             <a href="#" class="btn btn-primary">
                 <i class="bi bi-plus-lg"></i> Додати ПК
             </a>
@@ -20,7 +20,7 @@
         </div>
 
         <div class="card-body p-4">
-            <form action="/" method="GET" class="row g-3">
+            <form action="/computer" method="GET" class="row g-3">
 
                 <div class="col-md-5">
                     <label class="form-label fw-bold text-dark small">Пошук ПК</label>
@@ -29,7 +29,7 @@
                             <i class="bi bi-search"></i>
                         </span>
                         <input type="text" name="search" class="form-control bg-light border-start-0"
-                               placeholder="Введіть назву або IP..."
+                               placeholder="Введіть назву комп'ютера або його локацію"
                                value="<%= query.search || '' %>">
                     </div>
                 </div>
@@ -55,7 +55,7 @@
                         Знайти
                     </button>
 
-                    <a href="/" class="btn btn-light border text-muted d-flex align-items-center justify-content-center"
+                    <a href="/computer" class="btn btn-light border text-muted d-flex align-items-center justify-content-center"
                        style="width: 40px;"
                        title="Скинути всі фільтри">
                         <i class="bi bi-x-lg"></i>
@@ -80,7 +80,7 @@
                         borderClass = 'border-danger';
                         statusBadge = 'bg-danger';
                         statusText = 'Зайнятий';
-                        icon = 'bi-person-video-game';
+                        icon = 'bi-controller';
                     } else if (pc.status === 'MAINTENANCE') {
                         borderClass = 'border-warning';
                         statusBadge = 'bg-warning text-dark';
@@ -96,7 +96,7 @@
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <h5 class="card-title d-flex align-items-center">
                                 <i class="bi <%= icon %> fs-4 me-2"></i>
-                                <%= pc.name %>
+                                <%= pc.inventoryNumber %>
                             </h5>
                             <span class="badge rounded-pill <%= statusBadge %>">
                                 <%= statusText %>
@@ -104,38 +104,58 @@
                         </div>
 
                         <div class="mb-3">
+                            <p class="card-text text-muted small mb-1">Розташування: <%= pc.location %></p>
                             <% if (pc.status === 'BUSY') { %>
-                                <p class="card-text text-muted small mb-1">Користувач:</p>
-                                <p class="fw-bold mb-1"><%= pc.currentUser %></p>
                                 <p class="small text-danger"><i class="bi bi-clock"></i> Йде сеанс...</p>
                             <% } else if (pc.status === 'MAINTENANCE') { %>
-                                <p class="card-text text-danger small"><%= pc.note || 'Технічні роботи' %></p>
+                                <p class="card-text text-danger small"><%= 'Технічні роботи' %></p>
                             <% } else { %>
-                                <p class="card-text text-muted small mb-1">IP: <%= pc.ip || 'Unknown' %></p>
                                 <p class="text-success small"><i class="bi bi-check-circle"></i> Готовий до роботи</p>
                             <% } %>
                         </div>
 
                         <div class="mt-auto d-grid gap-2">
                             <% if (pc.status === 'AVAILABLE') { %>
-                                <form action="/computers/start/<%= pc.id %>" method="POST" class="d-grid">
+                                <form action="/session/start" method="POST" class="d-grid">
+                                    <input type="hidden" name="computerId" value="<%= pc.id %>">
                                     <button type="submit" class="btn btn-outline-success btn-sm">
                                         <i class="bi bi-play-fill"></i> Почати сеанс
                                     </button>
                                 </form>
-                            <% } else if (pc.status === 'BUSY' && user.role === 'ADMIN') { %>
-                                <form action="/computers/stop/<%= pc.id %>" method="POST" class="d-grid">
-                                    <button type="submit" class="btn btn-outline-danger btn-sm">
-                                        <i class="bi bi-stop-fill"></i> Завершити
+                            <% } else if (pc.status === 'BUSY') { %>
+                                <% if (user.role === 'DB_ADMIN') { %>
+                                    <form action="/admin/session-end" method="POST" class="d-grid">
+                                        <input type="hidden" name="computerId" value="<%= pc.id %>">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            <i class="bi bi-stop-fill"></i> Примусово завершити
+                                        </button>
+                                    </form>
+                                <% } else if (typeof activeComputerId !== 'undefined' && activeComputerId === pc.id) { %>
+                                    <form action="/session/end" method="POST" class="d-grid">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            <i class="bi bi-box-arrow-right"></i> Завершити роботу
+                                        </button>
+                                    </form>
+                                <% } else { %>
+                                    <button class="btn btn-secondary btn-sm" disabled>
+                                        <i class="bi bi-lock-fill"></i> Зайнятий
                                     </button>
-                                </form>
-                            <% } else if (pc.status === 'MAINTENANCE' && user.role === 'ADMIN') { %>
-                                <button class="btn btn-outline-secondary btn-sm">
-                                    <i class="bi bi-gear"></i> Завершити ремонт
-                                </button>
+                                <% } %>
+                            <% } else if (pc.status === 'MAINTENANCE') { %>
+                                <% if (user.role === 'DB_ADMIN') { %>
+                                    <form action="/admin/maintenance/end" method="POST" class="d-grid">
+                                        <input type="hidden" name="computerId" value="<%= pc.id %>">
+                                        <button class="btn btn-outline-secondary btn-sm">
+                                            <i class="bi bi-gear"></i> Завершити ремонт
+                                        </button>
+                                    </form>
+                                <% } else { %>
+                                    <button class="btn btn-secondary btn-sm" disabled>
+                                        <i class="bi bi-tools"></i> Технічні роботи
+                                    </button>
+                                <% } %>
                             <% } %>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -156,15 +176,15 @@
         <h1 class="display-5 fw-bold mt-4">Computer Center</h1>
         <div class="col-lg-6 mx-auto">
             <p class="lead mb-4">
-                Ласкаво просимо до системи керування комп'ютерним клубом.
+                Ласкаво просимо до системи керування комп'ютерами обчислювального центру.
                 Переглядайте вільні місця, бронюйте комп'ютери та слідкуйте за часом сеансів.
             </p>
 
             <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-                <a href="/login" class="btn btn-primary btn-lg px-4 gap-3">
+                <a href="/auth/login" class="btn btn-primary btn-lg px-4 gap-3">
                     Увійти в систему
                 </a>
-                <a href="/register" class="btn btn-outline-secondary btn-lg px-4">
+                <a href="/auth/register" class="btn btn-outline-secondary btn-lg px-4">
                     Реєстрація
                 </a>
             </div>

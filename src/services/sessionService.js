@@ -89,4 +89,40 @@ async function endSession(userId){
     }
 }
 
-module.exports = { startSession, endSession };
+async function forceStopSession(computerId) {
+    try {
+        const result = await prisma.$transaction(async (tx) => {
+            
+            const activeSession = await tx.session.findFirst({
+                where: {
+                    computerId: parseInt(computerId),
+                    endTime: null
+                }
+            });
+
+            if (!activeSession) {
+                throw new Error("На цьому комп'ютері немає активної сесії!");
+            }
+
+            const updatedSession = await tx.session.update({
+                where: { id: activeSession.id },
+                data: { endTime: new Date() }
+            });
+
+            await tx.computer.update({
+                where: { id: parseInt(computerId) },
+                data: { status: "AVAILABLE" }
+            });
+
+            return updatedSession;
+        });
+
+        return [200, result];
+    }
+    catch (e) {
+        console.error("Force Stop Error:", e);
+        return [400, { error: e.message }];
+    }
+}
+
+module.exports = { startSession, endSession, forceStopSession };

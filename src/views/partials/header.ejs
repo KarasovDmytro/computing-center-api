@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm">
     <div class="container">
-        <a class="navbar-brand d-flex align-items-center" href="/">
+        <a class="navbar-brand d-flex align-items-center" href="/computer">
             <i class="bi bi-pc-display me-2"></i> <strong>Computer Center</strong>
         </a>
 
@@ -15,16 +15,16 @@
                 <% if (typeof user !== 'undefined' && user) { %>
 
                     <li class="nav-item">
-                        <a class="nav-link active" href="/dashboard">Головна</a>
+                        <a class="nav-link active" href="/computer">Головна</a>
                     </li>
 
-                    <% if (user.role === 'ADMIN' || user.role === 'DB_ADMIN') { %>
+                    <% if (user.role === 'DB_ADMIN') { %>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                 Управління
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="/admin/computers">Комп'ютери</a></li>
+                                <li><a class="dropdown-item" href="/admin/computers">Сесії</a></li>
                                 <li><a class="dropdown-item" href="/admin/users">Користувачі</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="/reports">Звіти</a></li>
@@ -51,12 +51,12 @@
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="/profile">Мій профіль</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="/logout">Вийти</a></li>
+                            <li><a class="dropdown-item text-danger" href="/auth/logout">Вийти</a></li>
                         </ul>
                     </li>
                 <% } else { %>
                     <li class="nav-item">
-                        <a class="nav-link" href="/login">Вхід</a>
+                        <a class="nav-link" href="/auth/login">Вхід</a>
                     </li>
                 <% } %>
             </ul>

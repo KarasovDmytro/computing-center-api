@@ -7,7 +7,7 @@ const authController = {
             const {login, password} = req.body;
 
             if(!login || !password){
-                return res.status(400).json({message: 'Будь ласка, введіть логін та пароль'});
+                return res.render('pages/login', {error: 'Будь ласка, введіть логін та пароль'});
             }
 
             const user = await prisma.user.findUnique({
@@ -15,7 +15,7 @@ const authController = {
             });
 
             if(!user || user.password !== password){
-                return res.status(401).json({message: 'Невірний логін або пароль'});
+                return res.render('pages/login', {error: 'Невірний логін або пароль'});
             }
 
             req.session.user = {
@@ -27,18 +27,13 @@ const authController = {
             req.session.save((err) => {
                 if(err){
                     console.error('Session save error:', err);
-                    return res.status(500).json({ message: 'Помилка сервера при створенні сесії' });
+                    return res.render('pages/login', {error: 'Помилка сервера при створенні сесії користувача'});
                 }
-                // res.redirect('/'); or /main ? 
-                res.json({
-                    success: true, 
-                    message: `Вітаємо, ${user.pib}!`, 
-                    user: req.session.user
-                });
+                res.redirect('/computer'); 
             });
         } catch(e){
             console.error('Login error:', e);
-            res.status(500).json({ message: 'Сталася помилка на сервері' });
+            res.render('pages/login', {error: 'Сталася критична помилка на сервері'});
         }
     },
     
@@ -49,10 +44,7 @@ const authController = {
                 return res.status(500).json({ message: 'Не вдалося вийти з системи' });
             }
 
-            res.clearCookie('connect.sid');
-            // res.redirect('/login');
-            res.json({ success: true, message: 'Сесію успішно завершено' });
-
+            res.redirect('/computer');
         });
     },
 
@@ -64,6 +56,11 @@ const authController = {
         else{
             res.status(401).json({ isAuthenticated: false, message: 'Користувач не авторизований' });
         }
+    },
+
+    getLoginPage: (req, res) => {
+        if(req.session.user) return res.redirect('/computer');
+        res.render('pages/login', {error: null});
     }
 
 };
