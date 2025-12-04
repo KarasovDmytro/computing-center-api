@@ -9,7 +9,8 @@ const  redisClient = require('./config/redis');
 
 const authRoutes = require('./routes/authRoutes.js');
 const computerRoutes = require('./routes/computerRoutes.js');
-const sessionRouters = require('./routes/sessionRoutes.js');
+const sessionRoutes = require('./routes/sessionRoutes.js');
+const userRoutes = require('./routes/userRouters.js');
 
 const expressLayouts = require('express-ejs-layouts');
 
@@ -47,7 +48,8 @@ app.use((req, res, next) => {
 
 app.use('/auth', authRoutes);
 app.use('/computer', computerRoutes);
-app.use('/session', sessionRouters);
+app.use('/session', sessionRoutes);
+app.use('/user', userRoutes);
 
 app.get('/', (req, res) => {
   res.redirect('/computer');

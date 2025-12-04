@@ -1,0 +1,98 @@
+<div class="row justify-content-center mt-4 mb-5">
+    <div class="col-lg-6">
+
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h1 class="h3 mb-0">Редагування</h1>
+                <p class="text-muted small">Зміна даних користувача <strong><%= userToEdit.login %></strong></p>
+            </div>
+            <a href="/user" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> Назад
+            </a>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4">
+
+                <% if (locals.error) { %>
+                    <div class="alert alert-danger rounded-3 mb-4 small">
+                        <i class="bi bi-exclamation-octagon me-2"></i> <%= error %>
+                    </div>
+                <% } %>
+
+                <form action="/user/update" method="POST">
+                    <input type="hidden" name="id" value="<%= userToEdit.id %>">
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Прізвище та Ім'я</label>
+                        <input type="text" name="pib" class="form-control" value="<%= userToEdit.pib %>" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Логін</label>
+                        <input type="text" name="login" class="form-control" value="<%= userToEdit.login %>" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Роль</label>
+                        <select name="role" class="form-select cursor-pointer">
+                            <option value="USER" <%= userToEdit.role === 'USER' ? 'selected' : '' %>>Користувач</option>
+                            <option value="HARDWARE_SPECIALIST" <%= userToEdit.role === 'HARDWARE_SPECIALIST' ? 'selected' : '' %>>Технік</option>
+                            <option value="DB_ADMIN" <%= userToEdit.role === 'DB_ADMIN' ? 'selected' : '' %>>Адміністратор</option>
+                            <option value="PROGRAMMER" <%= userToEdit.role === 'PROGRAMMER' ? 'selected' : '' %>>Програміст</option>
+                            <option value="OPERATOR" <%= userToEdit.role === 'OPERATOR' ? 'selected' : '' %>>Оператор</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted">Новий пароль</label>
+                        <input type="password" name="password" class="form-control" placeholder="Залиште пустим, якщо не змінюєте">
+                        <div class="form-text small">Заповнюйте тільки якщо хочете змінити поточний пароль.</div>
+                    </div>
+
+                    <div class="alert alert-warning d-flex align-items-center rounded-3 mt-4 mb-0" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+                        <div>
+                            <div class="fw-bold">Увага!</div>
+                            <div class="small">
+                                Якщо ви змінюєте <strong>Логін</strong> або <strong>Пароль</strong>, не забудьте попередити користувача про зміни!
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <button type="button" class="btn btn-outline-danger btn-sm border-0" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                            <i class="bi bi-trash3 me-1"></i> Видалити користувача
+                        </button>
+
+                        <button type="submit" class="btn btn-primary fw-bold px-4">
+                            <i class="bi bi-check-lg me-2"></i> Зберегти зміни
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-body p-4 text-center">
+                <div class="mb-3 text-danger bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                    <i class="bi bi-exclamation-triangle-fill fs-3"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Видалити користувача?</h5>
+                <p class="text-muted mb-4">Ви збираєтесь видалити <strong><%= userToEdit.pib %></strong>. Цю дію неможливо відмінити.</p>
+                
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn btn-light border px-4" data-bs-dismiss="modal">Скасувати</button>
+                    <form action="/user/delete/<%= userToEdit.id %>" method="POST">
+                        <button type="submit" class="btn btn-danger px-4 fw-bold">Так, видалити</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
