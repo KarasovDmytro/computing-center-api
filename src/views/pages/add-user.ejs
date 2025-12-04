@@ -1,0 +1,84 @@
+<div class="row justify-content-center mt-4 mb-5">
+    <div class="col-lg-6">
+
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h1 class="h3 mb-0">Новий користувач</h1>
+                <p class="text-muted small">Реєстрація співробітника або клієнта</p>
+            </div>
+            <a href="/user" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> Назад
+            </a>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4">
+
+                <% if (locals.error) { %>
+                    <div class="alert alert-danger rounded-3 mb-4 small">
+                        <i class="bi bi-exclamation-octagon me-2"></i> <%= error %>
+                    </div>
+                <% } %>
+
+                <form action="/user/create" method="POST">
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Прізвище та Ім'я <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-primary"><i class="bi bi-person-vcard"></i></span>
+                            <input type="text" name="pib" class="form-control border-start-0" placeholder="Іванов Іван" required autofocus>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Логін для входу <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-primary"><i class="bi bi-person"></i></span>
+                            <input type="text" name="login" class="form-control border-start-0" placeholder="ivanov" required>
+                        </div>
+                        <div class="form-text small">Має бути унікальним у системі.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Роль доступу <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-primary"><i class="bi bi-shield-lock"></i></span>
+                            <select name="role" class="form-select border-start-0 cursor-pointer">
+                                <option value="USER">Користувач</option>
+                                <option value="HARDWARE_SPECIALIST">Технік</option>
+                                <option value="DB_ADMIN">Адміністратор</option>
+                                <option value="PROGRAMMER">Програміст</option>
+                                <option value="OPERATOR">Оператор</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted">Пароль <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-primary"><i class="bi bi-key"></i></span>
+                            <input type="password" name="password" class="form-control border-start-0" placeholder="********" required minlength="4">
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info d-flex align-items-center rounded-3 mb-4" role="alert">
+                        <i class="bi bi-info-circle-fill fs-4 me-3"></i>
+                        <div>
+                            <div class="fw-bold">Важливо!</div>
+                            <div class="small">Після створення акаунту <strong>обов'язково передайте логін та пароль</strong> користувачу особисто або через захищений канал зв'язку.</div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4 text-muted opacity-25">
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm">
+                            <i class="bi bi-check-lg me-2"></i> Створити користувача
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
