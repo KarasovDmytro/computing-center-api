@@ -8,7 +8,8 @@ const sessionController = {
         if (code === 201) {
             return res.redirect('/computer'); 
         } else {
-            return res.status(code).send(jsonRes.error);
+            req.session.flash = {type: 'error', message: `Спочатку завершіть сеанс за іншим комп'ютером!`}
+            return req.session.save(() => res.redirect('/computer'));
         }
     },
     endSessionController: async (req, res) =>{
