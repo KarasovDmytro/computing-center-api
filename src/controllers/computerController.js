@@ -51,16 +51,24 @@ const computerController = {
             }
         }
 
+            const flashMessage = req.session.flash;
+            delete req.session.flash;
+
             res.render('pages/dashboard', {
                 computers: computers,
                 activeComputerId: activeComputerId,
-                query: req.query
+                query: req.query,
+                flashMessage
             });
         }
         catch(e){
             console.log("Error when requesting computers data: ", e);
             res.status(500).render('pages/error', {message: "Помилка при отримані комп'ютерів"});
         };
+    },
+
+    getAddComputerForm: (req, res) =>{
+        res.render('pages/add-pc');
     },
 
     addComputer: async (req, res) => {
@@ -79,21 +87,29 @@ const computerController = {
                 }
             });
 
-            res.redirect('/computers');
+            req.session.flash = {type: 'success', message: `Комп'ютер ${inventoryNumber} успішно додано!`};
+
+            req.session.save(() => {
+                res.redirect('/computer');
+            });
         }
         catch(e){
             console.error('Помилка при створенні комп\'ютера:', e);
       
             if (e.code === 'P2002') {
-                return res.status(400).send('Комп\'ютер з таким номером вже існує!');
+                req.session.flash = { type: 'danger', message: 'Такий ПК вже існує' };
+                return req.session.save(() => res.redirect('/computer/create-form'));
             }
       
-            res.status(500).send('Не вдалося створити комп\'ютер');
+            req.session.flash = { type: 'danger', message: 'Помилка створення ПК' };
+            req.session.save(() => res.redirect('/computer/create-form'));
         }
     },
+
     finishMaintenance: async (req, res) => {
-        const { computerId } = req.body;
         try{
+            const { computerId } = req.body;
+
             await prisma.computer.update({
                 where: {id: parseInt(computerId)},
                 data: {status: 'AVAILABLE'}
@@ -102,8 +118,25 @@ const computerController = {
             res.redirect('/computer');
         }
         catch(e){
-            console.error(error);
+            console.error(e);
             res.status(500).send("Не вдалося завершити ремонт");
+        }
+    },
+
+    startMaintenance: async (req, res) => {
+        try{
+            const {computerId} = req.body;
+
+            await prisma.computer.update({
+                where: {id: parseInt(computerId)},
+                data: {status: "MAINTENANCE"}
+            });
+
+            res.redirect('/computer');
+        }
+        catch(e){
+            console.error(e);
+            res.status(500).send("Не вдалося почати ремонт");
         }
     }
 };

@@ -2,17 +2,21 @@
     <div class="col-md-6 col-lg-4">
 
         <div class="text-center mb-4">
-            <i class="bi bi-pc-display text-primary" style="font-size: 3rem;"></i>
-            <h2 class="h3 mt-2">Вхід у систему</h2>
+            <div class="mb-3">
+                <span class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle" style="width: 80px; height: 80px;">
+                    <i class="bi bi-pc-display" style="font-size: 2.5rem;"></i>
+                </span>
+            </div>
+            <h2 class="h3 fw-bold">Вхід у систему</h2>
             <p class="text-muted">Computer Center Management</p>
         </div>
 
-        <div class="card shadow-sm border-0">
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
             <div class="card-body p-4">
 
                 <% if (locals.error) { %>
-                    <div class="alert alert-danger d-flex align-items-center" role="alert">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <div class="alert alert-danger d-flex align-items-center small" role="alert">
+                        <i class="bi bi-exclamation-circle-fill me-2"></i>
                         <div><%= error %></div>
                     </div>
                 <% } %>
@@ -20,37 +24,47 @@
                 <form action="/auth/login" method="POST">
 
                     <div class="mb-3">
-                        <label for="login" class="form-label text-muted small">Логін</label>
+                        <label for="login" class="form-label text-muted small fw-bold">Логін</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
-                            <input type="text" class="form-control" id="login" name="login" placeholder="Введіть логін" required autofocus>
+                            <span class="input-group-text bg-light border-end-0 text-muted">
+                                <i class="bi bi-person"></i>
+                            </span>
+                            <input type="text" class="form-control bg-light border-start-0" id="login" name="login" placeholder="Ваш логін" required autofocus>
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="password" class="form-label text-muted small">Пароль</label>
+                    <div class="mb-4">
+                        <label for="password" class="form-label text-muted small fw-bold">Пароль</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
-                            <input type="password" class="form-control" id="password" name="password" placeholder="Введіть пароль" required>
+                            <span class="input-group-text bg-light border-end-0 text-muted">
+                                <i class="bi bi-lock"></i>
+                            </span>
+                            <input type="password" class="form-control bg-light border-start-0" id="password" name="password" placeholder="Ваш пароль" required>
                         </div>
                     </div>
 
-                    <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            Увійти
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm">
+                            <i class="bi bi-box-arrow-in-right me-2"></i> Увійти
                         </button>
                     </div>
 
                 </form>
             </div>
 
-            <div class="card-footer text-center py-3 bg-light border-0 small">
-                Немає акаунту? <a href="/register" class="text-decoration-none">Зареєструватися</a>
+            <div class="card-footer text-center py-3 bg-light border-0 small text-muted">
+                <p class="mb-1">Забули пароль або логін?</p>
+                <div class="d-flex justify-content-center align-items-center gap-2">
+                    <span>Зверніться до адміністратора:</span>
+                    <a href="mailto:admin@center.ua" class="text-decoration-none fw-bold text-dark">
+                        <i class="bi bi-envelope-fill text-primary me-1"></i>admin@center.ua
+                    </a>
+                </div>
             </div>
         </div>
 
-        <div class="text-center mt-3 text-muted small">
-            <p>Для тесту: <strong>admin / admin</strong> або <strong>dev / 123</strong></p>
+        <div class="text-center mt-5 text-muted small opacity-75">
+            <p class="mb-0">Dev hints: <strong>admin / admin</strong> або <strong>dev / 123</strong></p>
         </div>
 
     </div>
