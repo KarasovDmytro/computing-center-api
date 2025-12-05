@@ -8,6 +8,7 @@ router.get('/', computerController.getAllComputers);
 router.post('/create', isAuthenticated, hasRole('DB_ADMIN'), computerController.addComputer);
 router.post('/maintenance/end', isAuthenticated, hasRole(['HARDWARE_SPECIALIST', 'DB_ADMIN']), computerController.finishMaintenance);
 router.post('/maintenance/start', isAuthenticated, hasRole('HARDWARE_SPECIALIST'), computerController.startMaintenance);
+router.post('/delete', isAuthenticated, hasRole('DB_ADMIN'), computerController.deleteComputer);
 
 router.get('/create-form', isAuthenticated, hasRole('DB_ADMIN'), computerController.getAddComputerForm);
 

@@ -1,4 +1,5 @@
-const {startSession, endSession, forceStopSession} = require("../services/sessionService.js")
+const { parse } = require("dotenv");
+const {startSession, endSession, forceStopSession, getSessions} = require("../services/sessionService.js")
 
 const sessionController = {
     startSessionController: async (req, res) =>{
@@ -30,6 +31,30 @@ const sessionController = {
             return res.redirect('/computer'); 
         } else {
             return res.status(code).send(result.error);
+        }
+    },
+
+    getSessionsPage: async (req, res) => {
+        const limit = 10;
+        const page = parseInt(req.query.page) || 1;
+        const search = req.query.search || '';
+        const status = req.query.status || 'all';
+
+        const [sessions, count, code] = await getSessions(page, limit, search, status);
+        const totalPages = Math.ceil(count / limit) || 1;
+
+        if(code === 200){
+            res.render('pages/sessions', {
+                sessions,  
+                totalPages,
+                totalSessions: count,
+                search,
+                status,
+                currentPage: page
+            });
+        }
+        else{
+            res.redirect('/session');
         }
     }
 };

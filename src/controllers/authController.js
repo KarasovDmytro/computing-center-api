@@ -22,6 +22,7 @@ const authController = {
                 id: user.id,
                 pib: user.pib,
                 role: user.role,
+                login: user.login,
                 accessGroup: user.accessGroup
             };
             req.session.save((err) => {

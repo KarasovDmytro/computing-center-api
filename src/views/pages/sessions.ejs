@@ -1,0 +1,184 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 fw-bold text-dark">Історія сесій</h1>
+        <p class="text-muted mb-0">Архів активності користувачів (<%= totalSessions %> записів)</p>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    
+    <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+        <form action="/session" method="GET" class="row g-2">
+            <div class="col-md-3">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search"></i></span>
+                    <input type="text" name="search" class="form-control bg-light border-start-0" 
+                           placeholder="Пошук..." value="<%= search %>">
+                </div>
+            </div>
+        
+            <div class="col-md-3">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-funnel"></i></span>
+                    <select name="status" class="form-select bg-light border-start-0 cursor-pointer" onchange="this.form.submit()">
+                        <option value="all" <%= status === 'all' ? 'selected' : '' %>>Всі сесії</option>
+                        <option value="active" <%= status === 'active' ? 'selected' : '' %>>Активні</option>
+                        <option value="finished" <%= status === 'finished' ? 'selected' : '' %>>Завершені</option>
+                    </select>
+                </div>
+            </div>
+        
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100 fw-bold">Застосувати</button>
+            </div>
+            
+            <% if (search || status !== 'all') { %>
+                <div class="col-md-1">
+                    <a href="/session" class="btn btn-light w-100 border" title="Скинути фільтри"><i class="bi bi-x-lg"></i></a>
+                </div>
+            <% } %>
+        </form>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4 py-3 text-muted small fw-bold text-uppercase">Статус / ID</th>
+                        <th class="py-3 text-muted small fw-bold text-uppercase">Користувач</th>
+                        <th class="py-3 text-muted small fw-bold text-uppercase">Комп'ютер</th>
+                        <th class="py-3 text-muted small fw-bold text-uppercase">Початок</th>
+                        <th class="pe-4 py-3 text-muted small fw-bold text-uppercase">Кінець</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% sessions.forEach(session => { %>
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex flex-column align-items-start">
+                                    <% if (!session.endTime) { %>
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill mb-1 d-inline-flex align-items-center">
+                                            <span class="spinner-grow spinner-grow-sm me-2" style="width: 0.5rem; height: 0.5rem;" role="status"></span>
+                                            Активна
+                                        </span>
+                                    <% } else { %>
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 rounded-pill mb-1">
+                                            <i class="bi bi-check2-all me-1"></i>Завершена
+                                        </span>
+                                    <% } %>
+                                    <span class="text-muted small" style="font-family: monospace; font-size: 0.8rem;">
+                                        <i class="bi bi-hash text-muted opacity-50"></i><%= session.id %>
+                                    </span>
+                                </div>
+                            </td>
+                            
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="<%= session.user.deletedAt ? 'bg-secondary' : 'bg-primary' %> bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                                        <i class="bi bi-person-fill <%= session.user.deletedAt ? 'text-secondary' : '' %>"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark d-flex align-items-center gap-2">
+                                            <%= session.user.pib %>
+                                            
+                                            <% if (session.user.deletedAt) { %>
+                                                <span class="badge bg-secondary text-white border border-secondary" style="font-size: 0.6rem; letter-spacing: 0.5px;" title="Користувача видалено">
+                                                    ЗВІЛЬНЕНО
+                                                </span>
+                                            <% } %>
+                                        </div>
+                                        
+                                        <div class="small text-muted">
+                                            <% if (session.user.deletedAt) { %>
+                                                <span class="text-decoration-line-through">@<%= session.user.login.split('_deleted')[0] %></span>
+                                            <% } else { %>
+                                                @<%= session.user.login %>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                
+                            <td>
+                                <div>
+                                    <div class="fw-bold text-dark d-flex align-items-center gap-2">
+                                        <span>
+                                            <i class="bi bi-pc-display me-1 text-primary <%= session.computer.deletedAt ? 'text-muted' : '' %>"></i>
+                                            
+                                            <%= session.computer.deletedAt ? session.computer.inventoryNumber.split('_DEL')[0] : session.computer.inventoryNumber %>
+                                        </span>
+                
+                                        <% if (session.computer.deletedAt) { %>
+                                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25" style="font-size: 0.6rem;" title="Комп'ютер списано">
+                                                АРХІВ
+                                            </span>
+                                        <% } %>
+                                    </div>
+                                    
+                                    <div class="small text-muted">
+                                        <i class="bi bi-geo-alt-fill me-1 text-muted opacity-50"></i>
+                                        <% if (session.computer.deletedAt) { %>
+                                            <span class="text-decoration-line-through"><%= session.computer.location %></span>
+                                        <% } else { %>
+                                            <%= session.computer.location %>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </td>
+                
+                            <td class="text-nowrap text-muted small">
+                                <%= new Date(session.startTime).toLocaleString('uk-UA') %>
+                            </td>
+                            
+                            <td class="pe-4 text-nowrap">
+                                <% if (session.endTime) { %>
+                                    <span class="text-muted small"><%= new Date(session.endTime).toLocaleString('uk-UA') %></span>
+                                <% } else { %>
+                                    <span class="text-primary small fw-bold">...</span>
+                                <% } %>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+        
+        <% if (sessions.length === 0) { %>
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-clock-history fs-1"></i>
+                <p class="mt-2">Історія сесій порожня</p>
+            </div>
+        <% } %>
+    </div>
+
+    <% if (totalPages > 1) { %>
+        <div class="card-footer bg-white border-top py-3">
+            <nav>
+                <ul class="pagination justify-content-center mb-0">
+                    
+                    <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                        <a class="page-link border-0" href="/session?page=<%= currentPage - 1 %>&search=<%= search %>">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+
+                    <% for(let i = 1; i <= totalPages; i++) { %>
+                        <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                            <a class="page-link border-0 rounded-circle mx-1" 
+                               href="/session?page=<%= i %>&search=<%= search %>">
+                                <%= i %>
+                            </a>
+                        </li>
+                    <% } %>
+
+                    <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                        <a class="page-link border-0" href="/session?page=<%= currentPage + 1 %>&search=<%= search %>">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    <% } %>
+</div>

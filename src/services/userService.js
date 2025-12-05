@@ -12,6 +12,8 @@ async function getNUsers(page, limit, search){
             ]
         } : {};
 
+        whereClause.deletedAt = null;
+
         const [users, counter] = await prisma.$transaction(async (tx) => {
             const users = await tx.user.findMany({
                 where: whereClause,
@@ -96,7 +98,17 @@ async function updateUser(id, data) {
 
 async function deleteUser(id) {
     try {
-        await prisma.user.delete({ where: { id: parseInt(id) } });
+        const user = await prisma.user.findUnique({ where: { id: parseInt(id) } });
+        if (!user) return 404;
+
+        await prisma.user.update({
+            where: { id: parseInt(id) },
+            data: { 
+                deletedAt: new Date(),
+                login: `${user.login}_deleted_${Date.now()}`
+            }
+        });
+        
         return 200;
     } 
     catch (e) {

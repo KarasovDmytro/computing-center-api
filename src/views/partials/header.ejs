@@ -41,25 +41,24 @@
                 <% } %>
             </ul>
 
-            <ul class="navbar-nav ms-auto">
+            <div class="navbar-nav ms-auto d-flex align-items-center gap-3">
                 <% if (typeof user !== 'undefined' && user) { %>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
-                            <span class="me-2"><%= user.login %></span>
-                            <span class="badge bg-secondary"><%= user.role %></span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="/profile">Мій профіль</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="/auth/logout">Вийти</a></li>
-                        </ul>
-                    </li>
+                    
+                    <div class="text-end lh-1 d-none d-lg-block">
+                        <div class="fw-bold text-light"><%= user.login %></div>
+                        <small class="text-white-50" style="font-size: 0.75rem;"><%= user.role %></small>
+                    </div>
+            
+                    <div class="vr text-white opacity-25 d-none d-lg-block" style="height: 25px;"></div>
+            
+                    <a href="/auth/logout" class="btn btn-outline-light btn-sm d-flex align-items-center gap-2" title="Вийти з системи">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span class="d-lg-none">Вийти</span> </a>
+            
                 <% } else { %>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/auth/login">Вхід</a>
-                    </li>
+                    <a href="/auth/login" class="btn btn-primary btn-sm px-4 fw-bold">Вхід</a>
                 <% } %>
-            </ul>
+            </div>
 
         </div>
     </div>
