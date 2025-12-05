@@ -28,6 +28,8 @@ const computerController = {
                 ];
             }
 
+            whereClause.deletedAt = null;
+
             const computers = await prisma.computer.findMany({
                 where: whereClause,
                 orderBy: {
@@ -98,7 +100,7 @@ const computerController = {
       
             if (e.code === 'P2002') {
                 req.session.flash = { type: 'danger', message: 'Такий ПК вже існує' };
-                return req.session.save(() => res.redirect('/computer/create-form'));
+                return req.session.save(() => res.redirect('/computer'));
             }
       
             req.session.flash = { type: 'danger', message: 'Помилка створення ПК' };
@@ -137,6 +139,52 @@ const computerController = {
         catch(e){
             console.error(e);
             res.status(500).send("Не вдалося почати ремонт");
+        }
+    },
+
+    deleteComputer: async (req, res) => {
+        try {
+            const { id } = req.body;
+
+            if (!id) {
+                req.session.flash = { type: 'danger', message: 'ID комп\'ютера не передано.' };
+                return req.session.save(() => res.redirect('/computer'));
+            }
+
+            const activeSession = await prisma.session.findFirst({
+                where: {
+                    computerId: parseInt(id),
+                    endTime: null
+                }
+            });
+
+            if (activeSession) {
+                req.session.flash = { 
+                    type: 'warning', 
+                    message: 'Неможливо видалити: на цьому комп\'ютері зараз активна сесія! Спочатку завершіть її.' 
+                };
+                return req.session.save(() => res.redirect('/computer'));
+            }
+
+            const pc = await prisma.computer.findUnique({ where: { id: parseInt(id) } });
+            if (!pc) return res.redirect('/computer');
+
+            await prisma.computer.update({
+                where: { id: parseInt(id) },
+                data: {
+                    deletedAt: new Date(),
+                    status: 'ARCHIVED',
+                    inventoryNumber: `${pc.inventoryNumber}_DEL_${Date.now()}`
+                }
+            });
+
+            req.session.flash = { type: 'success', message: 'Комп\'ютер успішно перенесено в архів.' };
+            req.session.save(() => res.redirect('/computer'));
+
+        } catch (e) {
+            console.error("Помилка при видаленні ПК:", e);
+            req.session.flash = { type: 'danger', message: 'Сталася помилка при спробі видалення.' };
+            req.session.save(() => res.redirect('/computer'));
         }
     }
 };

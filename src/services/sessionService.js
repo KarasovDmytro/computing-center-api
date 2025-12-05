@@ -125,4 +125,49 @@ async function forceStopSession(computerId) {
     }
 }
 
-module.exports = { startSession, endSession, forceStopSession };
+async function getSessions(page, limit, search, status){
+    try{
+        const offset = (page - 1) * limit;
+        const searchCondition = search ? {
+            OR: [
+                { user: { pib: { contains: search, mode: 'insensitive' } } },             
+                { user: { login: { contains: search, mode: 'insensitive' } } },
+                { computer: { inventoryNumber: { contains: search, mode: 'insensitive' } } },
+                { computer: { location: { contains: search, mode: 'insensitive' } } }
+            ]
+        } : {};
+        
+        let statusCondition = {};
+        if (status === 'active') {
+            statusCondition = { endTime: null };
+        } else if (status === 'finished') {
+            statusCondition = { endTime: { not: null } };
+        }
+
+        const whereClause = {
+            ...searchCondition,
+            ...statusCondition
+        };
+
+        const [sessions, count] = await prisma.$transaction((async (tx) =>{
+            const gotSessions = await tx.session.findMany({
+                where: whereClause,
+                take: limit,
+                skip: offset,
+                orderBy: {startTime: "desc"},
+                include: {user: true, computer: true}
+            });
+    
+            const counter = await tx.session.count({where: whereClause});
+            return [gotSessions, counter];
+        }));
+
+        return [sessions, count, 200];
+    }
+    catch(e){
+        console.log('Error in getting sessions!', e.message);
+        return [[], 0, 500];
+    }
+}
+
+module.exports = { startSession, endSession, forceStopSession, getSessions};
