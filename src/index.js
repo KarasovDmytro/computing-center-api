@@ -11,6 +11,7 @@ const authRoutes = require('./routes/authRoutes.js');
 const computerRoutes = require('./routes/computerRoutes.js');
 const sessionRoutes = require('./routes/sessionRoutes.js');
 const userRoutes = require('./routes/userRouters.js');
+const reportRoutes = require('./routes/reportRoutes.js');
 
 const expressLayouts = require('express-ejs-layouts');
 
@@ -50,6 +51,7 @@ app.use('/auth', authRoutes);
 app.use('/computer', computerRoutes);
 app.use('/session', sessionRoutes);
 app.use('/user', userRoutes);
+app.use('/report', reportRoutes);
 
 app.get('/', (req, res) => {
   res.redirect('/computer');
