@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const { logAction } = require('../services/loggerService');
 
 const authController = {
     login: async (req, res) => {
@@ -25,11 +26,12 @@ const authController = {
                 login: user.login,
                 accessGroup: user.accessGroup
             };
-            req.session.save((err) => {
+            req.session.save(async (err) => {
                 if(err){
                     console.error('Session save error:', err);
                     return res.render('pages/login', {error: 'Помилка сервера при створенні сесії користувача'});
                 }
+                await logAction(req, 'LOGIN_SUCCESS', { role: user.role });
                 res.redirect('/computer'); 
             });
         } catch(e){
@@ -38,7 +40,8 @@ const authController = {
         }
     },
     
-    logout: (req, res) => {
+    logout: async (req, res) => {
+        await logAction(req, 'LOGOUT');
         req.session.destroy((err) => {
             if(err){
                 console.error('Logout error:', err);
@@ -47,16 +50,6 @@ const authController = {
 
             res.redirect('/computer');
         });
-    },
-
-    //for frontend
-    me: (req, res) => {
-        if(req.session.user) {
-            res.json({ isAuthenticated: true, user: req.session.user });
-        }
-        else{
-            res.status(401).json({ isAuthenticated: false, message: 'Користувач не авторизований' });
-        }
     },
 
     getLoginPage: (req, res) => {

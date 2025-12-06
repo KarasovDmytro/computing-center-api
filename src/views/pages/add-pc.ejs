@@ -1,5 +1,7 @@
 <div class="row justify-content-center mt-4 mb-5">
-    <div class="col-lg-6"> <div class="d-flex align-items-center justify-content-between mb-4">
+    <div class="col-lg-6">
+
+        <div class="d-flex align-items-center justify-content-between mb-4">
             <div>
                 <h1 class="h3 mb-0">Новий комп'ютер</h1>
                 <p class="text-muted small">Реєстрація обладнання в системі</p>
@@ -26,7 +28,7 @@
                             <span class="input-group-text bg-light border-end-0 text-primary">
                                 <i class="bi bi-upc-scan"></i>
                             </span>
-                            <input type="text" name="inventoryNumber" class="form-control border-start-0 fs-6" 
+                            <input type="text" name="inventoryNumber" class="form-control border-start-0 fs-6"
                                    placeholder="Наприклад: INV-2024-001" required autofocus>
                         </div>
                         <div class="form-text small">Унікальний номер для ідентифікації ПК.</div>
@@ -38,10 +40,56 @@
                             <span class="input-group-text bg-light border-end-0 text-primary">
                                 <i class="bi bi-geo-alt-fill"></i>
                             </span>
-                            <input type="text" name="location" class="form-control border-start-0 fs-6" 
+                            <input type="text" name="location" class="form-control border-start-0 fs-6"
                                    placeholder="Наприклад: Аудиторія 305 або Серверна 1" required>
                         </div>
                         <div class="form-text small">Вкажіть назву приміщення та номер.</div>
+                    </div>
+
+                    <h5 class="mb-3 mt-4 text-muted border-bottom pb-2 fs-6 fw-bold text-uppercase ls-1">
+                        <i class="bi bi-motherboard me-2"></i>Системні характеристики
+                    </h5>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted">Процесор (CPU)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-muted">
+                                    <i class="bi bi-cpu"></i>
+                                </span>
+                                <input type="text" name="cpu" class="form-control border-start-0" placeholder="Наприклад: i5-12400F">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted">ОЗП (RAM)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-muted">
+                                    <i class="bi bi-memory"></i>
+                                </span>
+                                <input type="text" name="ram" class="form-control border-start-0" placeholder="Наприклад: 16 GB">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted">Накопичувач</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-muted">
+                                    <i class="bi bi-hdd"></i>
+                                </span>
+                                <input type="text" name="storage" class="form-control border-start-0" placeholder="Наприклад: SSD 500GB">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted">Відеокарта (GPU)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-muted">
+                                    <i class="bi bi-gpu-card"></i>
+                                </span>
+                                <input type="text" name="gpu" class="form-control border-start-0" placeholder="Наприклад: RTX 3060">
+                            </div>
+                        </div>
                     </div>
 
                     <hr class="my-4 text-muted opacity-25">

@@ -1,5 +1,6 @@
 const { parse } = require("dotenv");
 const {startSession, endSession, forceStopSession, getSessions} = require("../services/sessionService.js")
+const { logAction } = require('../services/loggerService');
 
 const sessionController = {
     startSessionController: async (req, res) =>{
@@ -7,6 +8,7 @@ const sessionController = {
         const userId = req.session.user ? req.session.user.id : null;
         const [ code, jsonRes ] = await startSession(userId, computerId);
         if (code === 201) {
+            await logAction(req, 'SESSION_START', { computerId });
             return res.redirect('/computer'); 
         } else {
             req.session.flash = {type: 'error', message: `Спочатку завершіть сеанс за іншим комп'ютером!`}
@@ -14,9 +16,12 @@ const sessionController = {
         }
     },
     endSessionController: async (req, res) =>{
+        const { computerId } = req.body;
+        console.log(computerId);
         const userId = req.session.user ? req.session.user.id : null;
         const [ code, jsonRes ] = await endSession(userId);
         if (code === 200) {
+            await logAction(req, 'SESSION_END', { computerId });
             return res.redirect('/computer'); 
         } else {
             return res.status(code).send(jsonRes.error);
@@ -28,6 +33,7 @@ const sessionController = {
         const [ code, result ] = await forceStopSession(computerId);
 
         if (code === 200) {
+            await logAction(req, 'SESSION_FORCE_STOP', { computerId }, 'WARNING');
             return res.redirect('/computer'); 
         } else {
             return res.status(code).send(result.error);

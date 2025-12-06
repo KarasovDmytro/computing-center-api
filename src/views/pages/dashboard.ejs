@@ -5,11 +5,19 @@
             <p class="text-muted mb-0">Вітаємо, <strong><%= user.pib %></strong>! Ось статус комп'ютерного залу.</p>
         </div>
 
-        <% if (user.role === 'DB_ADMIN') { %>
-            <a href="/computer/create-form" class="btn btn-primary shadow-sm">
-                <i class="bi bi-plus-lg"></i> Додати ПК
-            </a>
-        <% } %>
+        <div class="d-flex gap-2">
+            <% if (['DB_ADMIN', 'PROGRAMMER', 'OPERATOR'].includes(user.role)) { %>
+                <a href="/logs" class="btn btn-white border shadow-sm fw-bold text-secondary" title="Перегляд подій системи">
+                    <i class="bi bi-journal-text me-2"></i>Логи
+                </a>
+            <% } %>
+
+            <% if (user.role === 'DB_ADMIN') { %>
+                <a href="/computer/create-form" class="btn btn-primary shadow-sm fw-bold">
+                    <i class="bi bi-plus-lg me-2"></i>Додати ПК
+                </a>
+            <% } %>
+        </div>
     </div>
     
     <% if (typeof flashMessage !== 'undefined' && flashMessage) { %>
@@ -114,6 +122,22 @@
                                 <h5 class="card-title d-flex align-items-center mb-1 fw-bold text-dark">
                                     <i class="bi <%= icon %> me-2 text-primary opacity-75"></i>
                                     <%= pc.inventoryNumber %>
+
+                                    <button type="button" class="btn btn-link text-muted p-0 ms-2"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#specsModal"
+                                            data-inv="<%= pc.inventoryNumber %>"
+                                    <% if (pc.specs) { %>
+                                            data-cpu="<%= pc.specs.cpu || '-' %>"
+                                            data-ram="<%= pc.specs.ram || '-' %>"
+                                            data-storage="<%= pc.specs.storage || '-' %>"
+                                            data-gpu="<%= pc.specs.gpu || '-' %>"
+                                    <% } else { %>
+                                            data-cpu="Не вказано" data-ram="-" data-storage="-" data-gpu="-"
+                                            <% } %>
+                                            title="Переглянути характеристики">
+                                        <i class="bi bi-info-circle-fill fs-5 opacity-50 hover-opacity-100"></i>
+                                    </button>
                                 </h5>
                                 <small class="text-muted"><i class="bi bi-geo-alt-fill me-1 opacity-50"></i><%= pc.location %></small>
                             </div>
@@ -187,6 +211,7 @@
                                     </form>
                                 <% } else if (typeof activeComputerId !== 'undefined' && activeComputerId === pc.id) { %>
                                     <form action="/session/end" method="POST" class="d-grid">
+                                        <input type="hidden" name="computerId" value="<%= pc.id %>">
                                         <button type="submit" class="btn btn-danger fw-bold shadow-sm border-0">
                                             <i class="bi bi-box-arrow-right me-1"></i> Завершити роботу
                                         </button>
@@ -263,3 +288,85 @@
         </div>
     </div>
 <% } %>
+<div class="modal fade" id="specsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm"> <div class="modal-content rounded-4 border-0 shadow">
+
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Характеристики</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body pt-2">
+                <p class="text-muted small mb-4">
+                    ПК: <strong id="modalInv" class="text-dark font-monospace"></strong>
+                </p>
+
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-primary bg-opacity-10 rounded p-2 me-3 text-primary">
+                        <i class="bi bi-cpu fs-5"></i>
+                    </div>
+                    <div>
+                        <div class="small text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">Процесор</div>
+                        <div class="fw-bold text-dark small" id="modalCpu">-</div>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-success bg-opacity-10 rounded p-2 me-3 text-success">
+                        <i class="bi bi-memory fs-5"></i>
+                    </div>
+                    <div>
+                        <div class="small text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">ОЗП (RAM)</div>
+                        <div class="fw-bold text-dark small" id="modalRam">-</div>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-warning bg-opacity-10 rounded p-2 me-3 text-dark">
+                        <i class="bi bi-hdd fs-5"></i>
+                    </div>
+                    <div>
+                        <div class="small text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">Накопичувач</div>
+                        <div class="fw-bold text-dark small" id="modalStorage">-</div>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <div class="bg-info bg-opacity-10 rounded p-2 me-3 text-info">
+                        <i class="bi bi-gpu-card fs-5"></i>
+                    </div>
+                    <div>
+                        <div class="small text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">Відеокарта</div>
+                        <div class="fw-bold text-dark small" id="modalGpu">-</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-light btn-sm w-100 rounded-pill" data-bs-dismiss="modal">Закрити</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const specsModal = document.getElementById('specsModal');
+    if (specsModal) {
+        specsModal.addEventListener('show.bs.modal', event => {
+            const button = event.relatedTarget;
+
+            const inv = button.getAttribute('data-inv');
+            const cpu = button.getAttribute('data-cpu');
+            const ram = button.getAttribute('data-ram');
+            const storage = button.getAttribute('data-storage');
+            const gpu = button.getAttribute('data-gpu');
+
+            specsModal.querySelector('#modalInv').textContent = inv;
+            specsModal.querySelector('#modalCpu').textContent = cpu;
+            specsModal.querySelector('#modalRam').textContent = ram;
+            specsModal.querySelector('#modalStorage').textContent = storage;
+            specsModal.querySelector('#modalGpu').textContent = gpu;
+        });
+    }
+</script>

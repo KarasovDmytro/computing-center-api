@@ -7,13 +7,18 @@ const session = require('express-session');
 const { RedisStore } = require("connect-redis");
 const  redisClient = require('./config/redis');
 
+const connectMongo = require('./config/mongo');
+
 const authRoutes = require('./routes/authRoutes.js');
 const computerRoutes = require('./routes/computerRoutes.js');
 const sessionRoutes = require('./routes/sessionRoutes.js');
 const userRoutes = require('./routes/userRouters.js');
 const reportRoutes = require('./routes/reportRoutes.js');
+const logsRoutes = require('./routes/logsRoutes.js');
 
 const expressLayouts = require('express-ejs-layouts');
+
+connectMongo();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -52,6 +57,7 @@ app.use('/computer', computerRoutes);
 app.use('/session', sessionRoutes);
 app.use('/user', userRoutes);
 app.use('/report', reportRoutes);
+app.use('/logs', logsRoutes);
 
 app.get('/', (req, res) => {
   res.redirect('/computer');

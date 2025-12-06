@@ -1,4 +1,5 @@
 const {getNUsers, registerUsr, getUserById, updateUser, deleteUser} = require('../services/userService.js');
+const { logAction } = require('../services/loggerService');
 
 userController = {
     getUsersPage: async (req, res) => {
@@ -13,6 +14,7 @@ userController = {
         delete req.session.flash;
 
         if(code === 200){
+            await logAction(req, 'USERS_List_VIEW', { page, search });
             res.render('pages/users', {
                 users,
                 totalPages,

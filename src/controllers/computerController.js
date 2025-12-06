@@ -1,5 +1,7 @@
 const {PrismaClient} = require('@prisma/client');
 const prisma = new PrismaClient();
+const { logAction } = require('../services/loggerService');
+const ComputerDetails = require('../models/ComputerDetails');
 
 const computerController = {
     getAllComputers: async (req, res) =>{
@@ -37,6 +39,23 @@ const computerController = {
                 }
             });
 
+            const computerIds = computers.map(pc => pc.id);
+            const specsDocs = await ComputerDetails.find({
+                computerId: { $in: computerIds }
+            });
+
+            const specsMap = new Map();
+            specsDocs.forEach(doc => {
+                specsMap.set(doc.computerId, doc.specs);
+            });
+
+            const computersWithSpecs = computers.map(pc => {
+                return {
+                    ...pc,
+                    specs: specsMap.get(pc.id) || null
+                };
+            });
+
             let activeComputerId = null;
         
             if (req.session.user) {
@@ -52,12 +71,11 @@ const computerController = {
                 activeComputerId = activeSession.computerId;
             }
         }
-
             const flashMessage = req.session.flash;
             delete req.session.flash;
 
             res.render('pages/dashboard', {
-                computers: computers,
+                computers: computersWithSpecs,
                 activeComputerId: activeComputerId,
                 query: req.query,
                 flashMessage
@@ -89,6 +107,21 @@ const computerController = {
                 }
             });
 
+            await ComputerDetails.create({
+                computerId: newPC.id,
+                specs: {
+                    cpu: cpu || 'Не вказано',
+                    ram: ram || 'Не вказано',
+                    gpu: gpu || 'Не вказано',
+                    storage: storage || 'SDD 256GB'
+                }
+            });
+
+            await logAction(req, 'COMPUTER_CREATE', {
+                computerId: newPC.id,
+                invNumber: newPC.inventoryNumber
+            });
+
             req.session.flash = {type: 'success', message: `Комп'ютер ${inventoryNumber} успішно додано!`};
 
             req.session.save(() => {
@@ -117,6 +150,8 @@ const computerController = {
                 data: {status: 'AVAILABLE'}
             });
 
+            await logAction(req, 'MAINTENANCE_FINISH', { computerId });
+
             res.redirect('/computer');
         }
         catch(e){
@@ -133,6 +168,8 @@ const computerController = {
                 where: {id: parseInt(computerId)},
                 data: {status: "MAINTENANCE"}
             });
+
+            await logAction(req, 'MAINTENANCE_START', { computerId });
 
             res.redirect('/computer');
         }
@@ -177,6 +214,11 @@ const computerController = {
                     inventoryNumber: `${pc.inventoryNumber}_DEL_${Date.now()}`
                 }
             });
+
+            await logAction(req, 'COMPUTER_ARCHIVE', {
+                computerId: id,
+                oldInvNumber: pc?.inventoryNumber
+            }, 'WARNING');
 
             req.session.flash = { type: 'success', message: 'Комп\'ютер успішно перенесено в архів.' };
             req.session.save(() => res.redirect('/computer'));

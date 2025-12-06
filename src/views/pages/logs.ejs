@@ -1,0 +1,210 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 fw-bold text-dark">Системний аудит</h1>
+        <p class="text-muted mb-0">Логування подій та дій користувачів (<%= totalLogs %> записів)</p>
+    </div>
+    <div class="d-flex gap-2">
+        <% if (user && user.role === 'DB_ADMIN' && totalLogs > 0) { %>
+            <button type="button" class="btn btn-outline-danger shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#clearLogsModal">
+                <i class="bi bi-trash3 me-2"></i>Очистити
+            </button>
+        <% } %>
+
+        <a href="/logs" class="btn btn-light border shadow-sm text-muted" title="Оновити">
+            <i class="bi bi-arrow-clockwise"></i>
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+
+    <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+        <form action="/logs" method="GET" class="row g-2">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search"></i></span>
+                    <input type="text" name="search" class="form-control bg-light border-start-0"
+                           placeholder="Пошук (Дія, IP, Користувач)..." value="<%= search %>">
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-funnel"></i></span>
+                    <select name="level" class="form-select bg-light border-start-0 cursor-pointer" onchange="this.form.submit()">
+                        <option value="all" <%= level === 'all' ? 'selected' : '' %>>Всі рівні</option>
+                        <option value="INFO" <%= level === 'INFO' ? 'selected' : '' %>>INFO (Інформація)</option>
+                        <option value="WARNING" <%= level === 'WARNING' ? 'selected' : '' %>>WARNING (Попередження)</option>
+                        <option value="ERROR" <%= level === 'ERROR' ? 'selected' : '' %>>ERROR (Помилки)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100 fw-bold">Застосувати</button>
+            </div>
+
+            <% if (search || level !== 'all') { %>
+                <div class="col-md-1">
+                    <a href="/logs" class="btn btn-light w-100 border" title="Скинути фільтри"><i class="bi bi-x-lg"></i></a>
+                </div>
+            <% } %>
+        </form>
+    </div>
+
+    <div class="card-body p-0 mt-3">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                <tr>
+                    <th class="ps-4 py-3 text-muted small fw-bold text-uppercase">Рівень / Дія</th>
+                    <th class="py-3 text-muted small fw-bold text-uppercase">Користувач</th>
+                    <th class="py-3 text-muted small fw-bold text-uppercase" style="width: 30%;">Деталі</th>
+                    <th class="py-3 text-muted small fw-bold text-uppercase">IP Адреса</th>
+                    <th class="pe-4 py-3 text-end text-muted small fw-bold text-uppercase">Час</th>
+                </tr>
+                </thead>
+                <tbody>
+                <% logs.forEach(log => { %>
+                    <%
+                        // Візуальна логіка для рівнів
+                        let badgeClass = 'bg-primary bg-opacity-10 text-primary border-primary';
+                        let icon = 'bi-info-circle-fill';
+
+                        if (log.level === 'WARNING') {
+                            badgeClass = 'bg-warning bg-opacity-10 text-dark border-warning';
+                            icon = 'bi-exclamation-triangle-fill';
+                        } else if (log.level === 'ERROR' || log.level === 'DANGER') {
+                            badgeClass = 'bg-danger bg-opacity-10 text-danger border-danger';
+                            icon = 'bi-x-octagon-fill';
+                        }
+                    %>
+                    <tr>
+                        <td class="ps-4">
+                            <div class="d-flex flex-column align-items-start">
+                                    <span class="badge <%= badgeClass %> border-opacity-25 rounded-pill mb-1 d-inline-flex align-items-center px-2 py-1">
+                                        <i class="bi <%= icon %> me-1"></i> <%= log.level %>
+                                    </span>
+                                <span class="fw-bold text-dark small">
+                                        <%= log.action %>
+                                    </span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="bg-secondary bg-opacity-10 text-secondary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                                <div>
+                                    <% if (log.userName && log.userName !== 'Unauthenticated') { %>
+                                        <div class="fw-bold text-dark small"><%= log.userName %></div>
+                                        <div class="text-muted" style="font-size: 0.75rem;">
+                                            <span class="badge bg-light text-secondary border rounded-pill py-0"><%= log.userRole %></span>
+                                        </div>
+                                    <% } else { %>
+                                        <div class="text-muted small fst-italic">Гість / Система</div>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="bg-light rounded-3 p-2 border border-light" style="max-height: 80px; overflow-y: auto;">
+                                <code class="text-muted small" style="font-size: 0.75rem; word-break: break-all;">
+                                    <%
+                                        // Видаляємо пусті об'єкти для краси
+                                        let detailsStr = JSON.stringify(log.details);
+                                        if (detailsStr === '{}') detailsStr = '-';
+                                        // Замінюємо коми на коми з пробілом для переносу
+                                        detailsStr = detailsStr.replace(/,/g, ', ');
+                                    %>
+                                    <%= detailsStr %>
+                                </code>
+                            </div>
+                        </td>
+
+                        <td>
+                                <span class="text-muted small font-monospace">
+                                    <i class="bi bi-globe me-1 opacity-50"></i><%= log.ip || '—' %>
+                                </span>
+                        </td>
+
+                        <td class="pe-4 text-end text-nowrap">
+                            <div class="d-flex flex-column">
+                                    <span class="fw-bold text-dark small">
+                                        <%= new Date(log.createdAt).toLocaleTimeString('uk-UA', {hour: '2-digit', minute:'2-digit'}) %>
+                                    </span>
+                                <span class="text-muted" style="font-size: 0.7rem;">
+                                        <%= new Date(log.createdAt).toLocaleDateString('uk-UA') %>
+                                    </span>
+                            </div>
+                        </td>
+                    </tr>
+                <% }) %>
+                </tbody>
+            </table>
+        </div>
+
+        <% if (logs.length === 0) { %>
+            <div class="text-center py-5 text-muted">
+                <div class="mb-3 text-secondary opacity-25">
+                    <i class="bi bi-journal-x fs-1"></i>
+                </div>
+                <p class="mb-0">Записів у журналі не знайдено</p>
+            </div>
+        <% } %>
+    </div>
+
+    <% if (totalPages > 1) { %>
+        <div class="card-footer bg-white border-top py-3">
+            <nav>
+                <ul class="pagination justify-content-center mb-0">
+                    <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                        <a class="page-link border-0" href="/logs?page=<%= currentPage - 1 %>&search=<%= search %>&level=<%= level %>">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+
+                    <% for(let i = 1; i <= totalPages; i++) { %>
+                        <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                            <a class="page-link border-0 rounded-circle mx-1"
+                               href="/logs?page=<%= i %>&search=<%= search %>&level=<%= level %>">
+                                <%= i %>
+                            </a>
+                        </li>
+                    <% } %>
+
+                    <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                        <a class="page-link border-0" href="/logs?page=<%= currentPage + 1 %>&search=<%= search %>&level=<%= level %>">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    <% } %>
+</div>
+<div class="modal fade" id="clearLogsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-body p-4 text-center">
+                <div class="mb-3 text-danger bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                    <i class="bi bi-exclamation-triangle-fill fs-3"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Очистити журнал подій?</h5>
+                <p class="text-muted mb-4">
+                    Ви збираєтесь видалити <strong>всі записи</strong> з історії. <br>
+                    Цю дію неможливо відмінити.
+                </p>
+
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn btn-light border px-4 rounded-pill" data-bs-dismiss="modal">Скасувати</button>
+                    <form action="/logs/clear" method="POST">
+                        <button type="submit" class="btn btn-danger px-4 fw-bold rounded-pill">Так, видалити все</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,13 +1,47 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const mongoose = require('mongoose');
+const ComputerDetails = require('../src/models/ComputerDetails');
+require('dotenv').config();
+
+const MONGO_URL = process.env.MONGO_URL
 
 const random = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const randomElement = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
+const hardwareOptions = {
+    cpus: ['Intel Core i3-10100', 'Intel Core i5-10400', 'AMD Ryzen 5 3600', 'Intel Core i5-12400F', 'AMD Ryzen 3 3200G'],
+    rams: ['8 GB', '16 GB', '32 GB'],
+    storages: ['SSD 256 GB', 'SSD 512 GB', 'HDD 1 TB', 'SSD 512 GB + HDD 1 TB'],
+    gpus: ['Intel UHD 630', 'NVIDIA GTX 1050 Ti', 'NVIDIA GTX 1650', 'AMD Radeon Vega 8', 'NVIDIA RTX 3050']
+};
+
+const generateSpecs = (isServer = false) => {
+    if (isServer) {
+        return {
+            cpu: 'Intel Xeon E-2224',
+            ram: '64 GB ECC',
+            storage: '2x HDD 4TB (RAID 1)',
+            gpu: 'Matrox G200 (Integrated)'
+        };
+    }
+    return {
+        cpu: randomElement(hardwareOptions.cpus),
+        ram: randomElement(hardwareOptions.rams),
+        storage: randomElement(hardwareOptions.storages),
+        gpu: randomElement(hardwareOptions.gpus)
+    };
+};
+
 async function main() {
+  if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(MONGO_URL);
+      console.log('Connected to MongoDB');
+  }
   await prisma.session.deleteMany();
   await prisma.computer.deleteMany();
   await prisma.user.deleteMany();
+  await ComputerDetails.deleteMany({});
   
   const computersData = [
     { inventoryNumber: 'SRV-01', location: 'Серверна', status: 'AVAILABLE' },
@@ -25,7 +59,21 @@ async function main() {
 
   await prisma.computer.createMany({ data: computersData });
   const allComputers = await prisma.computer.findMany();
-  
+
+    const mongoDocs = [];
+
+    for (const pc of allComputers) {
+        const isServer = pc.inventoryNumber.startsWith('SRV');
+
+        mongoDocs.push({
+            computerId: pc.id,
+            specs: generateSpecs(isServer)
+        });
+    }
+
+    await ComputerDetails.insertMany(mongoDocs);
+    console.log(`Created ${mongoDocs.length} spec documents in MongoDB`);
+
   const commonPassword = '123';
 
   const usersData = [
