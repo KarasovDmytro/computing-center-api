@@ -8,19 +8,27 @@ function formatDuration(ms) {
     return `${hours} год ${minutes} хв`;
 }
 
-async function getDailyReport(dateString, page = 1, limit = 10) {
+async function getDailyReport(dateString, page = 1, limit = 10, role) {
     try {
         const date = dateString ? new Date(dateString) : new Date();
         const startOfDay = new Date(date.setHours(0, 0, 0, 0));
         const endOfDay = new Date(date.setHours(23, 59, 59, 999));
 
+        const whereClause = {
+            startTime: {
+                gte: startOfDay,
+                lte: endOfDay
+            }
+        };
+
+        if (role && role !== 'all') {
+            whereClause.user = {
+                role: role
+            };
+        }
+
         const sessions = await prisma.session.findMany({
-            where: {
-                startTime: {
-                    gte: startOfDay,
-                    lte: endOfDay
-                }
-            },
+            where: whereClause,
             include: { user: true }
         });
 
