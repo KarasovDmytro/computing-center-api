@@ -63,7 +63,11 @@ app.get('/', (req, res) => {
   res.redirect('/computer');
 });
 
-app.listen(PORT, () => {
-  console.log(`\n--- Server running on http://localhost:${PORT} ---`);
-  console.log(`Example: Database URL is ${process.env.DATABASE_URL ? 'Loaded' : 'Missing'}\n`);
-});
+module.exports = app;
+
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`\n--- Server running on http://localhost:${PORT} ---`);
+        console.log(`Example: Database URL is ${process.env.DATABASE_URL ? 'Loaded' : 'Missing'}\n`);
+    });
+}

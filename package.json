@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "npx prisma generate && npx prisma migrate dev && nodemon -L src/index.js",
+    "test": "cross-env NODE_ENV=test jest --detectOpenHandles",
     "seed": "node prisma/seed.js"
   },
   "repository": {
@@ -34,7 +35,10 @@
     "redis": "^5.10.0"
   },
   "devDependencies": {
+    "cross-env": "^10.1.0",
+    "jest": "^30.2.0",
     "nodemon": "^3.1.11",
-    "prisma": "^6.17.1"
+    "prisma": "^6.17.1",
+    "supertest": "^7.1.4"
   }
 }

@@ -97,7 +97,7 @@ const computerController = {
 
     addComputer: async (req, res) => {
         try{
-            const { inventoryNumber, location } = req.body;
+            const { inventoryNumber, location, cpu, ram, gpu, storage } = req.body;
 
             if(!inventoryNumber || !location){
                 return res.status(400).send('Інвентарний номер та локація обов\'язкові!');
