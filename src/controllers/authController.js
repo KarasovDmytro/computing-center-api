@@ -36,6 +36,9 @@ const authController = {
             });
         } catch(e){
             console.error('Login error:', e);
+            try {
+                await logAction(req, 'AUTH_SYSTEM_ERROR', { error: e.message }, 'ERROR');
+            } catch(logErr) { console.error('Logger failed too:', logErr); }
             res.render('pages/login', {error: 'Сталася критична помилка на сервері'});
         }
     },

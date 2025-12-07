@@ -1,0 +1,194 @@
+[1mdiff --git a/src/controllers/computerController.js b/src/controllers/computerController.js[m
+[1mindex ee5a5db..a38621a 100644[m
+[1m--- a/src/controllers/computerController.js[m
+[1m+++ b/src/controllers/computerController.js[m
+[36m@@ -7,59 +7,37 @@[m [mconst computerController = {[m
+     getAllComputers: async (req, res) =>{[m
+         try{[m
+             const { search, status } = req.query;[m
+[32m+[m[32m            const whereClause = {};[m
+ [m
+[31m-            const CACHE_KEY = 'computers:dashboard_list';[m
+[31m-            const isCleanRequest = !search && !status;[m
+[31m-            let computers = null;[m
+[31m-            let source = 'BD'; //ЛОГИ[m
+[31m-[m
+[31m-            if(isCleanRequest){[m
+[31m-                const cachedData = await redisClient.get(CACHE_KEY);[m
+[31m-                if(cachedData){[m
+[31m-                    computers = JSON.parse(cachedData);[m
+[31m-                    source = 'REDIS'; //ЛОГИ[m
+[31m-                }[m
+[32m+[m[32m            if (status) {[m
+[32m+[m[32m                whereClause.status = status;[m
+             }[m
+ [m
+[31m-            if(!computers){[m
+[31m-                const whereClause = {};[m
+[31m-[m
+[31m-                if (status) {[m
+[31m-                    whereClause.status = status;[m
+[31m-                }[m
+[31m-[m
+[31m-                if (search) {[m
+[31m-                    whereClause.OR = [[m
+[31m-                        { [m
+[31m-                            inventoryNumber: { [m
+[31m-                                contains: search, [m
+[31m-                                mode: 'insensitive'[m
+[31m-                            } [m
+[31m-                        },[m
+[31m-                        { [m
+[31m-                            location: { [m
+[31m-                                contains: search, [m
+[31m-                                mode: 'insensitive' [m
+[31m-                            } [m
+[31m-                        }[m
+[31m-                    ];[m
+[31m-                }[m
+[31m-[m
+[31m-                whereClause.deletedAt = null;[m
+[31m-[m
+[31m-                computers = await prisma.computer.findMany({[m
+[31m-                    where: whereClause,[m
+[31m-                    orderBy: {[m
+[31m-                        inventoryNumber: "asc"[m
+[32m+[m[32m            if (search) {[m
+[32m+[m[32m                whereClause.OR = [[m
+[32m+[m[32m                    {[m[41m [m
+[32m+[m[32m                        inventoryNumber: {[m[41m [m
+[32m+[m[32m                            contains: search,[m[41m [m
+[32m+[m[32m                            mode: 'insensitive'[m
+[32m+[m[32m                        }[m[41m [m
+[32m+[m[32m                    },[m
+[32m+[m[32m                    {[m[41m [m
+[32m+[m[32m                        location: {[m[41m [m
+[32m+[m[32m                            contains: search,[m[41m [m
+[32m+[m[32m                            mode: 'insensitive'[m[41m [m
+[32m+[m[32m                        }[m[41m [m
+                     }[m
+[31m-                });[m
+[31m-[m
+[31m-                if(isCleanRequest){[m
+[31m-                    await redisClient.setEx(CACHE_KEY, 60, JSON.stringify(computers));[m
+[31m-                }[m
+[32m+[m[32m                ];[m
+             }[m
+[31m-            console.log(`Data source: ${source}`); //ЛОГИ[m
+ [m
+[32m+[m[32m            whereClause.deletedAt = null;[m
+[32m+[m
+[32m+[m[32m            const computers = await prisma.computer.findMany({[m
+[32m+[m[32m                where: whereClause,[m
+[32m+[m[32m                orderBy: {[m
+[32m+[m[32m                    inventoryNumber: "asc"[m
+[32m+[m[32m                }[m
+[32m+[m[32m            });[m
+ [m
+             const computerIds = computers.map(pc => pc.id);[m
+             const specsDocs = await ComputerDetails.find({[m
+[36m@@ -89,9 +67,8 @@[m [mconst computerController = {[m
+                     select: { computerId: true }[m
+                 });[m
+             [m
+[31m-                if (activeSession) {[m
+[31m-                    activeComputerId = activeSession.computerId;[m
+[31m-                }[m
+[32m+[m[32m            if (activeSession) {[m
+[32m+[m[32m                activeComputerId = activeSession.computerId;[m
+             }[m
+         }[m
+             const flashMessage = req.session.flash;[m
+[36m@@ -237,7 +214,6 @@[m [mconst computerController = {[m
+                     inventoryNumber: `${pc.inventoryNumber}_DEL_${Date.now()}`[m
+                 }[m
+             });[m
+[31m-            await redisClient.del('computers:dashboard_list');[m
+ [m
+             await logAction(req, 'COMPUTER_ARCHIVE', {[m
+                 computerId: id,[m
+[1mdiff --git a/src/controllers/reportController.js b/src/controllers/reportController.js[m
+[1mindex 77a7cfd..4ab36c2 100644[m
+[1m--- a/src/controllers/reportController.js[m
+[1m+++ b/src/controllers/reportController.js[m
+[36m@@ -12,12 +12,11 @@[m [mconst reportController = {[m
+                 page: page[m
+             });[m
+             [m
+[31m-            const stats = await getDailyReport(date, page, 10, role);[m
+[32m+[m[32m            const stats = await getDailyReport(date, page, 10);[m
+ [m
+             res.render('pages/reports', {[m
+                 stats,[m
+[31m-                queryDate: date,[m
+[31m-                currentRole: role[m
+[32m+[m[32m                queryDate: date[m
+             });[m
+         } catch (e) {[m
+             console.error(e);[m
+[1mdiff --git a/src/services/reportService.js b/src/services/reportService.js[m
+[1mindex 09e5f8c..4d5588c 100644[m
+[1m--- a/src/services/reportService.js[m
+[1m+++ b/src/services/reportService.js[m
+[36m@@ -8,27 +8,19 @@[m [mfunction formatDuration(ms) {[m
+     return `${hours} год ${minutes} хв`;[m
+ }[m
+ [m
+[31m-async function getDailyReport(dateString, page = 1, limit = 10, role) {[m
+[32m+[m[32masync function getDailyReport(dateString, page = 1, limit = 10) {[m
+     try {[m
+         const date = dateString ? new Date(dateString) : new Date();[m
+         const startOfDay = new Date(date.setHours(0, 0, 0, 0));[m
+         const endOfDay = new Date(date.setHours(23, 59, 59, 999));[m
+ [m
+[31m-        const whereClause = {[m
+[31m-            startTime: {[m
+[31m-                gte: startOfDay,[m
+[31m-                lte: endOfDay[m
+[31m-            }[m
+[31m-        };[m
+[31m-[m
+[31m-        if (role && role !== 'all') {[m
+[31m-            whereClause.user = {[m
+[31m-                role: role[m
+[31m-            };[m
+[31m-        }[m
+[31m-[m
+         const sessions = await prisma.session.findMany({[m
+[31m-            where: whereClause,[m
+[32m+[m[32m            where: {[m
+[32m+[m[32m                startTime: {[m
+[32m+[m[32m                    gte: startOfDay,[m
+[32m+[m[32m                    lte: endOfDay[m
+[32m+[m[32m                }[m
+[32m+[m[32m            },[m
+             include: { user: true }[m
+         });[m
+ [m
+[1mdiff --git a/src/services/sessionService.js b/src/services/sessionService.js[m
+[1mindex 16e8d52..7356cfa 100644[m
+[1m--- a/src/services/sessionService.js[m
+[1m+++ b/src/services/sessionService.js[m
+[36m@@ -1,7 +1,6 @@[m
+ const {PrismaClient} = require('@prisma/client');[m
+ const session = require('express-session');[m
+ const prisma = new PrismaClient();[m
+[31m-const redisClient = require('../config/redis');[m
+ [m
+ async function startSession(userId, computerId){[m
+     try{[m
+[36m@@ -50,7 +49,6 @@[m [masync function startSession(userId, computerId){[m
+             return newSession;[m
+         });[m
+ [m
+[31m-        await redisClient.del('computers:dashboard_list');[m
+         return [201, result];[m
+     }[m
+     catch(e){[m
+[36m@@ -82,7 +80,7 @@[m [masync function endSession(userId){[m
+ [m
+             return activeSession[m
+         });[m
+[31m-        await redisClient.del('computers:dashboard_list');[m
+[32m+[m
+  

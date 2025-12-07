@@ -34,6 +34,9 @@ const logsController = {
 
             const totalPages = Math.ceil(totalLogs / limit) || 1;
 
+            const flashMessage = req.session.flash;
+            delete req.session.flash;
+
             res.render('pages/logs', {
                 logs,
                 currentPage: page,
@@ -41,7 +44,8 @@ const logsController = {
                 totalLogs,
                 search,
                 level,
-                user: req.session.user
+                user: req.session.user,
+                flashMessage
             });
 
         } catch (e) {
@@ -60,7 +64,7 @@ const logsController = {
 
             await AuditLog.create({
                 action: 'LOGS_CLEARED',
-                level: 'DANGER',
+                level: 'CRITICAL',
                 ip: req.ip || req.connection.remoteAddress,
                 userId: req.session.user.id,
                 userRole: req.session.user.role,

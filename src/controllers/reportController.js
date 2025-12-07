@@ -20,6 +20,10 @@ const reportController = {
             });
         } catch (e) {
             console.error(e);
+            await logAction(req, 'REPORT_GENERATION_ERROR', {
+                date: req.query.date,
+                error: e.message
+            }, 'ERROR');
             res.status(500).send("Помилка генерації звіту");
         }
     }

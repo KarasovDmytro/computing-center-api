@@ -15,7 +15,25 @@
         </a>
     </div>
 </div>
+<% if (typeof flashMessage !== 'undefined' && flashMessage) { %>
+    <div class="alert alert-<%= flashMessage.type %> alert-dismissible fade show shadow-sm border-0 border-start border-5 rounded-3 mb-4" role="alert" style="border-left-color: var(--bs-<%= flashMessage.type %>) !important;">
+        <div class="d-flex align-items-center">
+            <% if (flashMessage.type === 'success') { %>
+                <i class="bi bi-check-circle-fill fs-4 me-3 text-success"></i>
+            <% } else { %>
+                <i class="bi bi-exclamation-triangle-fill fs-4 me-3 text-danger"></i>
+            <% } %>
 
+            <div>
+                <h6 class="alert-heading fw-bold mb-1">
+                    <%= flashMessage.type === 'success' ? 'Успішно!' : 'Увага!' %>
+                </h6>
+                <p class="mb-0 small"><%= flashMessage.message %></p>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<% } %>
 <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
 
     <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
@@ -36,6 +54,7 @@
                         <option value="INFO" <%= level === 'INFO' ? 'selected' : '' %>>INFO (Інформація)</option>
                         <option value="WARNING" <%= level === 'WARNING' ? 'selected' : '' %>>WARNING (Попередження)</option>
                         <option value="ERROR" <%= level === 'ERROR' ? 'selected' : '' %>>ERROR (Помилки)</option>
+                        <option value="CRITICAL" <%= level === 'ERROR' ? 'selected' : '' %>>CRITICAL (Критичні)</option>
                     </select>
                 </div>
             </div>
@@ -74,7 +93,7 @@
                         if (log.level === 'WARNING') {
                             badgeClass = 'bg-warning bg-opacity-10 text-dark border-warning';
                             icon = 'bi-exclamation-triangle-fill';
-                        } else if (log.level === 'ERROR' || log.level === 'DANGER') {
+                        } else if (log.level === 'ERROR' || log.level === 'CRITICAL') {
                             badgeClass = 'bg-danger bg-opacity-10 text-danger border-danger';
                             icon = 'bi-x-octagon-fill';
                         }

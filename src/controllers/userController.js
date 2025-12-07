@@ -56,6 +56,10 @@ userController = {
         } 
         catch (e) {
             console.error(e);
+            await logAction(req, 'USER_CREATE_ERROR', {
+                loginAttempt: req.body.login,
+                error: e.message
+            }, 'ERROR');
             res.render('pages/add-user', { user: req.session.user, error: "Помилка сервера при створенні." });
         }
     },
@@ -108,6 +112,10 @@ userController = {
             }
         } catch (e) {
             console.error(e);
+            await logAction(req, 'USER_UPDATE_ERROR', {
+                targetUserId: req.body.id,
+                error: e.message
+            }, 'ERROR');
             req.session.flash = { type: 'danger', message: 'Помилка оновлення' };
             req.session.save(() => res.redirect('/user'));
         }

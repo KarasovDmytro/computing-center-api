@@ -83,6 +83,10 @@ const computerController = {
         }
         catch(e){
             console.log("Error when requesting computers data: ", e);
+            await logAction(req, 'SYSTEM_ERROR_COMPUTERS_LIST', {
+                error: e.message,
+                stack: e.stack
+            }, 'ERROR');
             res.status(500).render('pages/error', {message: "Помилка при отримані комп'ютерів"});
         };
     },
@@ -130,7 +134,15 @@ const computerController = {
         }
         catch(e){
             console.error('Помилка при створенні комп\'ютера:', e);
-      
+
+            const level = e.code === 'P2002' ? 'WARNING' : 'ERROR';
+            const action = e.code === 'P2002' ? 'COMPUTER_CREATE_DUPLICATE' : 'COMPUTER_CREATE_ERROR';
+
+            await logAction(req, action, {
+                error: e.message,
+                inventoryNumber: req.body.inventoryNumber
+            }, level);
+
             if (e.code === 'P2002') {
                 req.session.flash = { type: 'danger', message: 'Такий ПК вже існує' };
                 return req.session.save(() => res.redirect('/computer'));
@@ -156,6 +168,12 @@ const computerController = {
         }
         catch(e){
             console.error(e);
+
+            await logAction(req, 'MAINTENANCE_FINISH_ERROR', {
+                computerId: req.body.computerId,
+                error: e.message
+            }, 'ERROR');
+
             res.status(500).send("Не вдалося завершити ремонт");
         }
     },
@@ -175,6 +193,10 @@ const computerController = {
         }
         catch(e){
             console.error(e);
+            await logAction(req, 'MAINTENANCE_START_ERROR', {
+                computerId: req.body.computerId,
+                error: e.message
+            }, 'ERROR');
             res.status(500).send("Не вдалося почати ремонт");
         }
     },
@@ -225,6 +247,10 @@ const computerController = {
 
         } catch (e) {
             console.error("Помилка при видаленні ПК:", e);
+            await logAction(req, 'COMPUTER_DELETE_ERROR', {
+                computerId: req.body.id,
+                error: e.message
+            }, 'ERROR');
             req.session.flash = { type: 'danger', message: 'Сталася помилка при спробі видалення.' };
             req.session.save(() => res.redirect('/computer'));
         }

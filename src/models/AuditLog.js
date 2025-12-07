@@ -28,7 +28,7 @@ const auditLogSchema = new mongoose.Schema({
     },
     level: {
         type: String,
-        enum: ['INFO', 'WARNING', 'ERROR', 'DANGER'],
+        enum: ['INFO', 'WARNING', 'ERROR', 'CRITICAL'],
         default: 'INFO'
     },
     createdAt: {
