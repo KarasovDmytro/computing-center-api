@@ -1,6 +1,7 @@
 const {PrismaClient} = require('@prisma/client');
 const session = require('express-session');
 const prisma = new PrismaClient();
+const redisClient = require('../config/redis');
 
 async function startSession(userId, computerId){
     try{
@@ -48,7 +49,7 @@ async function startSession(userId, computerId){
 
             return newSession;
         });
-
+        await redisClient.del('computers:dashboard_list');
         return [201, result];
     }
     catch(e){
@@ -80,7 +81,7 @@ async function endSession(userId){
 
             return activeSession
         });
-
+        await redisClient.del('computers:dashboard_list');
         return [200, result];
     }
     catch(e){
@@ -116,7 +117,7 @@ async function forceStopSession(computerId) {
 
             return updatedSession;
         });
-
+        await redisClient.del('computers:dashboard_list');
         return [200, result];
     }
     catch (e) {

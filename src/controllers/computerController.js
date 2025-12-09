@@ -2,42 +2,63 @@ const {PrismaClient} = require('@prisma/client');
 const prisma = new PrismaClient();
 const { logAction } = require('../services/loggerService');
 const ComputerDetails = require('../models/ComputerDetails');
+const redisClient = require('../config/redis');
 
 const computerController = {
     getAllComputers: async (req, res) =>{
         try{
             const { search, status } = req.query;
+
+            const CACHE_KEY = 'computers:dashboard_list';
+            const isCleanRequest = !search && !status;
+            let computers = null;
+            let source = 'BD'; //ЛОГИ
             const whereClause = {};
 
-            if (status) {
-                whereClause.status = status;
-            }
-
-            if (search) {
-                whereClause.OR = [
-                    { 
-                        inventoryNumber: { 
-                            contains: search, 
-                            mode: 'insensitive'
-                        } 
-                    },
-                    { 
-                        location: { 
-                            contains: search, 
-                            mode: 'insensitive' 
-                        } 
-                    }
-                ];
-            }
-
-            whereClause.deletedAt = null;
-
-            const computers = await prisma.computer.findMany({
-                where: whereClause,
-                orderBy: {
-                    inventoryNumber: "asc"
+            if(isCleanRequest){
+                const cachedData = await redisClient.get(CACHE_KEY);
+                if(cachedData){
+                    computers = JSON.parse(cachedData);
+                    source = 'REDIS'; //ЛОГИ
                 }
-            });
+            }
+
+            if(!computers){
+                if (status) {
+                    whereClause.status = status;
+                }
+
+                if (search) {
+                    whereClause.OR = [
+                        { 
+                            inventoryNumber: { 
+                                contains: search, 
+                                mode: 'insensitive'
+                            } 
+                        },
+                        { 
+                            location: { 
+                                contains: search, 
+                                mode: 'insensitive' 
+                            } 
+                        }
+                    ];
+                }
+
+                whereClause.deletedAt = null;
+
+                computers = await prisma.computer.findMany({
+                    where: whereClause,
+                    orderBy: {
+                        inventoryNumber: "asc"
+                    }
+                });
+
+                if(isCleanRequest){
+                    await redisClient.setEx(CACHE_KEY, 60, JSON.stringify(computers));
+                }
+            }
+            console.log(`Data source: ${source}`); //ЛОГИ
 
             const computerIds = computers.map(pc => pc.id);
             const specsDocs = await ComputerDetails.find({
@@ -125,7 +146,7 @@ const computerController = {
                 computerId: newPC.id,
                 invNumber: newPC.inventoryNumber
             });
-
+            await redisClient.del('computers:dashboard_list');
             req.session.flash = {type: 'success', message: `Комп'ютер ${inventoryNumber} успішно додано!`};
 
             req.session.save(() => {
@@ -163,7 +184,7 @@ const computerController = {
             });
 
             await logAction(req, 'MAINTENANCE_FINISH', { computerId });
-
+            await redisClient.del('computers:dashboard_list');
             res.redirect('/computer');
         }
         catch(e){
@@ -188,7 +209,7 @@ const computerController = {
             });
 
             await logAction(req, 'MAINTENANCE_START', { computerId });
-
+            await redisClient.del('computers:dashboard_list');
             res.redirect('/computer');
         }
         catch(e){
@@ -236,7 +257,7 @@ const computerController = {
                     inventoryNumber: `${pc.inventoryNumber}_DEL_${Date.now()}`
                 }
             });
-
+            await redisClient.del('computers:dashboard_list');
             await logAction(req, 'COMPUTER_ARCHIVE', {
                 computerId: id,
                 oldInvNumber: pc?.inventoryNumber
