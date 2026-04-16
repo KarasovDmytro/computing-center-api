@@ -6,73 +6,78 @@ class ComputerService {
     }
 
     async getComputersData(search, status) {
-        const CACHE_KEY = 'computers:dashboard_list';
-        const isCleanRequest = !search && !status;
-        let computers = null;
-        let source = 'BD';
+        try {
+            const CACHE_KEY = 'computers:dashboard_list';
+            const isCleanRequest = !search && !status;
+            let computers = null;
+            let source = 'BD';
 
-        if (isCleanRequest) {
-            const cachedData = await this.redisClient.get(CACHE_KEY);
-            if (cachedData) {
-                computers = JSON.parse(cachedData);
-                source = 'REDIS';
-            }
-        }
-
-        if (!computers) {
-            const whereClause = { deletedAt: null };
-
-            if (status) {
-                whereClause.status = status;
-            }
-
-            if (search) {
-                whereClause.OR = [
-                    {
-                        inventoryNumber: {
-                            contains: search,
-                            mode: 'insensitive'
-                        }
-                    },
-                    {
-                        location: {
-                            contains: search,
-                            mode: 'insensitive'
-                        }
-                    }
-                ];
-            }
-
-            computers = await this.prisma.computer.findMany({
-                where: whereClause,
-                orderBy: {
-                    inventoryNumber: "asc"
+            if (isCleanRequest) {
+                const cachedData = await this.redisClient.get(CACHE_KEY);
+                if (cachedData) {
+                    computers = JSON.parse(cachedData);
+                    source = 'REDIS';
                 }
+            }
+
+            if (!computers) {
+                const whereClause = { deletedAt: null };
+
+                if (status) {
+                    whereClause.status = status;
+                }
+
+                if (search) {
+                    whereClause.OR = [
+                        {
+                            inventoryNumber: {
+                                contains: search,
+                                mode: 'insensitive'
+                            }
+                        },
+                        {
+                            location: {
+                                contains: search,
+                                mode: 'insensitive'
+                            }
+                        }
+                    ];
+                }
+
+                computers = await this.prisma.computer.findMany({
+                    where: whereClause,
+                    orderBy: {
+                        inventoryNumber: "asc"
+                    }
+                });
+
+                if (isCleanRequest && computers.length > 0) {
+                    await this.redisClient.setEx(CACHE_KEY, 60, JSON.stringify(computers));
+                }
+            }
+
+            const computerIds = computers.map(pc => pc.id);
+            const specsDocs = await this.ComputerDetails.find({
+                computerId: { $in: computerIds }
             });
 
-            if (isCleanRequest && computers.length > 0) {
-                await this.redisClient.setEx(CACHE_KEY, 60, JSON.stringify(computers));
-            }
+            const specsMap = new Map();
+            specsDocs.forEach(doc => {
+                specsMap.set(doc.computerId, doc.specs);
+            });
+
+            const computersWithSpecs = computers.map(pc => {
+                return {
+                    ...pc,
+                    specs: specsMap.get(pc.id) || null
+                };
+            });
+
+            return { computers: computersWithSpecs, source };
+        } catch (error) {
+            console.error('Помилка при отриманні даних комп\'ютерів:', error);
+            return { computers: [], source: 'BD' };
         }
-
-        const computerIds = computers.map(pc => pc.id);
-        const specsDocs = await this.ComputerDetails.find({
-            computerId: { $in: computerIds }
-        });
-
-        const specsMap = new Map();
-        specsDocs.forEach(doc => {
-            specsMap.set(doc.computerId, doc.specs);
-        });
-
-        const computersWithSpecs = computers.map(pc => {
-            return {
-                ...pc,
-                specs: specsMap.get(pc.id) || null
-            };
-        });
-
-        return { computers: computersWithSpecs, source };
     }
 
     async getActiveSessionComputerId(userId) {
@@ -110,7 +115,7 @@ class ComputerService {
                 cpu: cpu || 'Не вказано',
                 ram: ram || 'Не вказано',
                 gpu: gpu || 'Не вказано',
-                storage: storage || 'SDD 256GB'
+                storage: storage || 'Не вказано'
             }
         });
 
